@@ -3,7 +3,9 @@
 A native iPhone and iPad companion app for [MeshCore](https://github.com/meshcore-dev/MeshCore) LoRa mesh radios.
 Its headline feature keeps the radio's position accurate: a radio with GPS uses its own, and a radio without GPS is fed the phone's location.
 
-Status: **Phase 0** (project setup and design system). See [PLAN.md](PLAN.md) for the full spec and build plan.
+Status: **Phase 1** (companion protocol, BLE/TCP transports, connection). See [PLAN.md](PLAN.md) for the full spec and build plan.
+
+To try it: Settings → Radio → scan for a Bluetooth radio, enter a Wi‑Fi radio's address (port 5000), or, in debug builds, connect to the simulated radio.
 
 ## Requirements
 
@@ -33,7 +35,7 @@ To run on a device, copy `Config/Local.xcconfig.example` to `Config/Local.xcconf
 | Path | Contents |
 |---|---|
 | `App/` | SwiftUI app target (shell, screens) |
-| `Packages/MeshCoreKit` | Companion protocol: codec, transports, session |
+| `Packages/MeshCoreKit` | Companion protocol: frame codec, BLE/TCP/mock transports, session, reconnect, simulated radio |
 | `Packages/MeshServices` | Sync, GPS Feed, telemetry, admin, Internet Map, observer uplink |
 | `Packages/MeshMaps` | Offline map extraction and storage (PMTiles) |
 | `Packages/MeshStore` | Persistence (SwiftData) |

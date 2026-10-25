@@ -1,9 +1,22 @@
-/// Constants for the MeshCore companion radio protocol.
-///
-/// The frame codec, transports and session actor arrive in Phase 1; see PLAN.md §3.1.
+/// Constants for the MeshCore companion radio protocol (firmware `examples/companion_radio`).
 public enum MeshCoreProtocol {
     /// Companion protocol version (`FIRMWARE_VER_CODE`) that m-Core is built against (firmware v1.18.0).
     public static let referenceVersionCode: UInt8 = 14
+
+    /// Protocol version m-Core tells the radio it understands (`CMD_DEVICE_QUERY`).
+    /// 3+ makes the radio send the V3 message frames that carry SNR.
+    public static let appTargetVersion: UInt8 = 3
+
+    /// Largest frame the firmware sends or accepts (`MAX_FRAME_SIZE`).
+    public static let maxFrameSize = 176
+
+    public static let publicKeySize = 32
+    public static let keyPrefixSize = 6
+    public static let signatureSize = 64
+    public static let maxPathSize = 64
+
+    /// TCP port used by Wi‑Fi companion builds (`TCP_PORT`).
+    public static let defaultTCPPort: UInt16 = 5000
 
     /// Nordic UART Service UUIDs used by companion radios over BLE.
     public enum BLE {

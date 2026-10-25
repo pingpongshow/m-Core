@@ -46,8 +46,21 @@ struct PlaceholderScreen: View {
 }
 
 struct SettingsView: View {
+    @Environment(RadioConnectionModel.self) private var radio
+
     var body: some View {
         List {
+            Section {
+                NavigationLink {
+                    RadioView()
+                } label: {
+                    LabeledContent {
+                        StatusPill(connection: radio.status)
+                    } label: {
+                        Label("Radio", systemImage: "antenna.radiowaves.left.and.right")
+                    }
+                }
+            }
             Section("Developer") {
                 NavigationLink {
                     DesignGalleryView()
@@ -73,4 +86,5 @@ private extension Bundle {
 
 #Preview {
     RootView()
+        .environment(RadioConnectionModel())
 }

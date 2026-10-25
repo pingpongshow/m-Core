@@ -11,6 +11,8 @@ excluded:
 disabled_rules:
   - todo
   - trailing_comma
+  # Radio text is decoded leniently on purpose (invalid UTF-8 becomes U+FFFD instead of failing).
+  - optional_data_string_conversion
 
 opt_in_rules:
   - closure_spacing
@@ -36,3 +38,7 @@ identifier_name:
   min_length: 1
   excluded:
     - id
+
+# Protocol code is mostly switch tables over frame codes; count branches, not cases.
+cyclomatic_complexity:
+  ignores_case_statements: true

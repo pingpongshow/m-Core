@@ -288,6 +288,8 @@ Estimates assume one developer.
 | **8. Ship** | TestFlight beta (local mesh group), privacy manifest, App Review notes for background location + BLE, reserve the name in App Store Connect, licence and attribution check, App Store listing | Approved build; area downloads work from the current Protomaps build | 1 wk |
 | **9. Post-launch** | In-app firmware update (nRF52 BLE DFU; repeater `start ota`), offline LoS elevation, more languages | Each ships as a point release | ongoing |
 
+**Progress (25 Oct 2026):** Phase 0 done. Phase 1 code complete: the codec covers every v14 command, response and push, with golden-frame tests; BLE, TCP and mock transports; a session that runs one command at a time and checks reply types; a reconnecting connection; a simulated radio; and a Radio screen. **Still to do for Phase 1's exit criteria: connect to real nRF52 and ESP32 radios over BLE, and to an ESP32 over TCP.**
+
 **Total:** about **15–19 weeks** to launch. A **usable build with the GPS feed and chat comes after Phases 0–3, about 5–7 weeks**.
 
 ---

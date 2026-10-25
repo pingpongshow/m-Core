@@ -49,6 +49,8 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "m-Core uses Bluetooth to connect to your MeshCore radio."
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "m-Core connects to Wi-Fi MeshCore radios on your local network."
     dependencies:
       - package: MeshCoreKit
       - package: MeshServices
