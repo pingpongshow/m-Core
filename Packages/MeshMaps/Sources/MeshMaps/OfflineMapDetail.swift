@@ -1,7 +1,7 @@
 /// Detail level for a downloaded offline map area.
 ///
-/// The PMTiles extractor and offline store arrive in Phase 4; see PLAN.md §4.4.
-public enum OfflineMapDetail: String, CaseIterable, Sendable {
+/// See PLAN.md §4.4; extraction lives in ``PMTilesExtractor`` and storage in ``OfflineMapStore``.
+public enum OfflineMapDetail: String, CaseIterable, Sendable, Codable {
     case standard
     case high
 

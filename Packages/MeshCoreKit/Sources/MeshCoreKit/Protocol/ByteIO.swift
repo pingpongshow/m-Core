@@ -89,6 +89,14 @@ struct ByteWriter {
     mutating func i32(_ value: Int32) { u32(UInt32(bitPattern: value)) }
     mutating func append<S: Sequence>(_ more: S) where S.Element == UInt8 { bytes += more }
 
+    /// `value × 1000` as the firmware's unsigned fixed-point field, clamped to `UInt32` (NaN → 0).
+    /// Plain `UInt32(_:)` traps on negative, NaN or huge input, e.g. from an imported profile.
+    static func thousandths(_ value: Double) -> UInt32 {
+        let scaled = (value * 1000).rounded()
+        guard scaled.isFinite else { return scaled == .infinity ? .max : 0 }
+        return UInt32(min(max(scaled, 0), Double(UInt32.max)))
+    }
+
     /// UTF-8 text with no terminator.
     mutating func text(_ string: String) { bytes += Array(string.utf8) }
 

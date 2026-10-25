@@ -78,7 +78,7 @@ public actor MeshSession {
             frames = try await transport.open()
         } catch {
             end(reason: error)
-            throw MeshError.transport(String(describing: error))
+            throw MeshError.transport(error.localizedDescription)
         }
         isOpen = true
         readerTask = Task { [weak self] in
@@ -128,6 +128,19 @@ public actor MeshSession {
         }
     }
 
+    /// Sends a command the radio answers only with a push (e.g. a telemetry request for itself),
+    /// keeping the one-at-a-time order. Watch `pushes` for the answer.
+    public func sendExpectingPush(_ command: Command) async throws {
+        await acquire()
+        defer { release() }
+        guard isOpen else { throw MeshError.notConnected }
+        do {
+            try await transport.send(command.encoded())
+        } catch {
+            throw MeshError.transport(error.localizedDescription)
+        }
+    }
+
     /// Sends a command expecting a plain OK.
     public func perform(_ command: Command) async throws {
         try await request(command) { response in
@@ -170,7 +183,7 @@ public actor MeshSession {
                 do {
                     try await transport.send(frame)
                 } catch {
-                    self.fail(id: id, with: MeshError.transport(String(describing: error)))
+                    self.fail(id: id, with: MeshError.transport(error.localizedDescription))
                 }
             }
         }

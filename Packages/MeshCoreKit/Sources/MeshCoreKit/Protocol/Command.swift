@@ -19,6 +19,8 @@ public enum Command: Equatable, Sendable {
     /// `since` limits the reply to contacts modified after that radio time.
     case getContacts(since: UInt32? = nil)
     case getContactByKey(PublicKey)
+    /// The radio stamps the record with its own clock (`lastModified` isn't sent), like the reference clients,
+    /// so the change appears in the next `getContacts(since:)`.
     case addUpdateContact(Contact)
     case removeContact(PublicKey)
     case resetPath(PublicKey)

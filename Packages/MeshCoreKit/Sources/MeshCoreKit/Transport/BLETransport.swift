@@ -1,5 +1,23 @@
 @preconcurrency import CoreBluetooth
 import Foundation
+import Synchronization
+
+/// Whether this process has created a `CBCentralManager` yet. AccessorySetupKit can only migrate radios found with
+/// CoreBluetooth into its accessory list before the app's first central manager exists.
+public enum CoreBluetoothUsage {
+    private static let created = Atomic<Bool>(false)
+
+    public static var hasCreatedCentralManager: Bool { created.load(ordering: .relaxed) }
+
+    static func makeCentral(
+        delegate: any CBCentralManagerDelegate,
+        queue: DispatchQueue,
+        options: [String: Any]? = nil
+    ) -> CBCentralManager {
+        created.store(true, ordering: .relaxed)
+        return CBCentralManager(delegate: delegate, queue: queue, options: options)
+    }
+}
 
 /// A companion radio seen during a BLE scan.
 public struct DiscoveredRadio: Identifiable, Hashable, Sendable {
@@ -23,6 +41,8 @@ public final class BLEScanner: NSObject, @unchecked Sendable {
     private let queue = DispatchQueue(label: "app.mcore.ble.scan")
     private var central: CBCentralManager?
     private var continuation: AsyncStream<DiscoveredRadio>.Continuation?
+    /// Identifies the current scan, so a superseded stream's termination doesn't stop its replacement.
+    private var scanID: UUID?
 
     override public init() {
         super.init()
@@ -31,24 +51,33 @@ public final class BLEScanner: NSObject, @unchecked Sendable {
     /// Starts scanning. Results repeat as RSSI updates; scanning stops when the stream is no longer iterated.
     public func scan() -> AsyncStream<DiscoveredRadio> {
         let (stream, continuation) = AsyncStream<DiscoveredRadio>.makeStream(bufferingPolicy: .bufferingNewest(64))
-        continuation.onTermination = { [weak self] _ in self?.stop() }
+        let id = UUID()
+        continuation.onTermination = { [weak self] _ in self?.stop(scan: id) }
         queue.async {
             self.continuation?.finish()
             self.continuation = continuation
+            self.scanID = id
             if let central = self.central {
                 self.startScanning(central)
             } else {
-                self.central = CBCentralManager(delegate: self, queue: self.queue)
+                self.central = CoreBluetoothUsage.makeCentral(delegate: self, queue: self.queue)
             }
         }
         return stream
     }
 
     public func stop() {
+        stop(scan: nil)
+    }
+
+    /// Stops scanning; with an `id`, only if that scan is still the current one.
+    private func stop(scan id: UUID?) {
         queue.async {
+            guard id == nil || id == self.scanID else { return }
             self.central?.stopScan()
             self.continuation?.finish()
             self.continuation = nil
+            self.scanID = nil
         }
     }
 
@@ -89,6 +118,7 @@ extension BLEScanner: CBCentralManagerDelegate {
 public final class BLETransport: NSObject, MeshTransport, @unchecked Sendable {
     public let peripheralID: UUID
     private let openTimeout: Duration
+    private let restoreIdentifier: String?
     private let queue = DispatchQueue(label: "app.mcore.ble")
 
     private var central: CBCentralManager?
@@ -99,10 +129,13 @@ public final class BLETransport: NSObject, MeshTransport, @unchecked Sendable {
     private var writeContinuation: CheckedContinuation<Void, Error>?
     private var isClosing = false
 
-    /// - Parameter openTimeout: Covers connecting, discovery and the user typing a pairing PIN.
-    public init(peripheralID: UUID, openTimeout: Duration = .seconds(60)) {
+    /// - Parameters:
+    ///   - openTimeout: Covers connecting, discovery and the user typing a pairing PIN.
+    ///   - restoreIdentifier: CoreBluetooth state-restoration key; lets iOS relaunch the app for radio events.
+    public init(peripheralID: UUID, openTimeout: Duration = .seconds(60), restoreIdentifier: String? = nil) {
         self.peripheralID = peripheralID
         self.openTimeout = openTimeout
+        self.restoreIdentifier = restoreIdentifier
         super.init()
     }
 
@@ -117,7 +150,11 @@ public final class BLETransport: NSObject, MeshTransport, @unchecked Sendable {
                 self.isClosing = false
                 self.inbound = continuation
                 self.openContinuation = opened
-                self.central = CBCentralManager(delegate: self, queue: self.queue)
+                var options: [String: Any] = [:]
+                if let restoreIdentifier = self.restoreIdentifier {
+                    options[CBCentralManagerOptionRestoreIdentifierKey] = restoreIdentifier
+                }
+                self.central = CoreBluetoothUsage.makeCentral(delegate: self, queue: self.queue, options: options)
                 self.queue.asyncAfter(deadline: .now() + self.openTimeout.timeInterval) {
                     if self.openContinuation != nil { self.finish(error: TransportError.timedOut) }
                 }
@@ -182,8 +219,12 @@ extension BLETransport: CBCentralManagerDelegate {
     public func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
-            guard peripheral == nil, openContinuation != nil else { return }
-            guard let target = central.retrievePeripherals(withIdentifiers: [peripheralID]).first else {
+            guard openContinuation != nil else { return }
+            if let restored = peripheral, restored.state == .connected {
+                restored.discoverServices([MeshCoreProtocol.BLE.service])
+                return
+            }
+            guard let target = peripheral ?? central.retrievePeripherals(withIdentifiers: [peripheralID]).first else {
                 finish(error: TransportError.peripheralNotFound)
                 return
             }
@@ -198,6 +239,14 @@ extension BLETransport: CBCentralManagerDelegate {
             finish(error: TransportError.bluetoothUnavailable("Bluetooth LE is not supported"))
         default:
             break
+        }
+    }
+
+    public func centralManager(_ central: CBCentralManager, willRestoreState dict: [String: Any]) {
+        let restored = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] ?? []
+        if let match = restored.first(where: { $0.identifier == peripheralID }) {
+            peripheral = match
+            match.delegate = self
         }
     }
 

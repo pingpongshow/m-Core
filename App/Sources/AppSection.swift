@@ -27,14 +27,4 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
         case .settings: "gearshape.fill"
         }
     }
-
-    /// Build phase that delivers the section (PLAN.md §7), shown on placeholder screens.
-    var plannedPhase: Int? {
-        switch self {
-        case .chats: 3
-        case .nodes, .map: 4
-        case .tools: 6
-        case .settings: nil
-        }
-    }
 }

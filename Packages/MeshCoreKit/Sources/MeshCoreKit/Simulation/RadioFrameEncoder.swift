@@ -15,8 +15,23 @@ public enum RadioFrameEncoder {
             return encodeContactMessage(message)
         case .channelMessage(let message):
             return encodeChannelMessage(message)
+        case .channelData(let data):
+            return encodeChannelData(data)
+        case .advertPath(let advertPath):
+            var w = ByteWriter(code: ResponseCode.advertPath.rawValue)
+            w.u32(advertPath.receivedAt)
+            w.u8(advertPath.path?.encodedLength ?? MeshPath.unknownLength)
+            w.append(advertPath.path?.bytes ?? [])
+            return w.data
+        case .defaultFloodScope(let scope):
+            var w = ByteWriter(code: ResponseCode.defaultFloodScope.rawValue)
+            if let scope {
+                w.fixedString(scope.name, width: 31)
+                w.append(scope.key)
+            }
+            return w.data
         default:
-            return encodeScalar(response)
+            return encodeScalar(response) ?? encodeSettings(response)
         }
     }
 
@@ -70,6 +85,52 @@ public enum RadioFrameEncoder {
         }
     }
 
+    /// Stats, settings, key and signing responses.
+    private static func encodeSettings(_ response: Response) -> Data? {
+        switch response {
+        case .stats(let stats):
+            return encodeStats(stats)
+        case .tuningParams(let params):
+            var w = ByteWriter(code: ResponseCode.tuningParams.rawValue)
+            w.u32(ByteWriter.thousandths(params.rxDelayBase))
+            w.u32(ByteWriter.thousandths(params.airtimeFactor))
+            return w.data
+        case .autoAddConfig(let config):
+            var w = ByteWriter(code: ResponseCode.autoAddConfig.rawValue)
+            w.u8(config.flags)
+            if let hops = config.maxHops { w.u8(hops) }
+            return w.data
+        case .allowedRepeatFrequencies(let ranges):
+            var w = ByteWriter(code: ResponseCode.allowedRepeatFrequencies.rawValue)
+            for range in ranges {
+                w.u32(range.lowerKHz)
+                w.u32(range.upperKHz)
+            }
+            return w.data
+        case .privateKey(let key):
+            return Data([ResponseCode.privateKey.rawValue]) + key
+        case .disabled:
+            return Data([ResponseCode.disabled.rawValue])
+        case .signStart(let maxLength):
+            var w = ByteWriter(code: ResponseCode.signStart.rawValue)
+            w.u8(0)
+            w.u32(maxLength)
+            return w.data
+        case .signature(let signature):
+            return Data([ResponseCode.signature.rawValue]) + signature
+        case .exportedContact(let packet):
+            return Data([ResponseCode.exportContact.rawValue]) + packet
+        case .channelInfo(let channel):
+            var w = ByteWriter(code: ResponseCode.channelInfo.rawValue)
+            w.u8(channel.index)
+            w.fixedString(channel.name, width: 32)
+            w.append(channel.secret)
+            return w.data
+        default:
+            return nil
+        }
+    }
+
     public static func encode(_ push: Push) -> Data? {
         switch push {
         case .messagesWaiting:
@@ -84,6 +145,34 @@ public enum RadioFrameEncoder {
             return Data([PushCode.contactDeleted.rawValue] + key.bytes)
         case .newAdvert(let contact):
             return encodeContact(contact, code: PushCode.newAdvert.rawValue)
+        case .loginSuccess(let result):
+            return encodeLoginSuccess(result)
+        case .loginFailed(let prefix):
+            return Data([PushCode.loginFailed.rawValue, 0] + prefix.bytes)
+        case .telemetryResponse(let response):
+            return Data([PushCode.telemetryResponse.rawValue, 0] + response.senderPrefix.bytes) + response.lpp
+        case .statusResponse(let response):
+            return Data([PushCode.statusResponse.rawValue, 0] + response.senderPrefix.bytes) + response.payload
+        case .pathDiscoveryResponse(let result):
+            return encodePathDiscovery(result)
+        case .traceData(let trace):
+            return encodeTrace(trace)
+        case .rxLog(let entry):
+            var w = ByteWriter(code: PushCode.rxLog.rawValue)
+            w.i8(Int8(clamping: Int((entry.snr * 4).rounded())))
+            w.i8(entry.rssi)
+            w.append(entry.raw)
+            return w.data
+        case .binaryResponse(let response):
+            var w = ByteWriter(code: PushCode.binaryResponse.rawValue)
+            w.u8(0)
+            w.u32(response.tag)
+            w.append(response.payload)
+            return w.data
+        case .rawData(let packet):
+            return encodeRadioPacket(packet, code: PushCode.rawData.rawValue)
+        case .controlData(let packet):
+            return encodeRadioPacket(packet, code: PushCode.controlData.rawValue)
         case .sendConfirmed(let confirmation):
             var w = ByteWriter(code: PushCode.sendConfirmed.rawValue)
             w.u32(confirmation.ackCode)
@@ -92,6 +181,76 @@ public enum RadioFrameEncoder {
         default:
             return nil
         }
+    }
+}
+
+// MARK: Frame bodies
+
+extension RadioFrameEncoder {
+    private static func encodeStats(_ stats: Stats) -> Data {
+        var w = ByteWriter(code: ResponseCode.stats.rawValue)
+        switch stats {
+        case .core(let core):
+            w.u8(StatsType.core.rawValue)
+            w.u16(core.batteryMillivolts)
+            w.u32(core.uptimeSeconds)
+            w.u16(core.errorFlags)
+            w.u8(core.outboundQueueLength)
+        case .radio(let radio):
+            w.u8(StatsType.radio.rawValue)
+            w.u16(UInt16(bitPattern: radio.noiseFloorDbm))
+            w.i8(radio.lastRSSI)
+            w.i8(Int8(clamping: Int((radio.lastSNR * 4).rounded())))
+            w.u32(radio.txAirtimeSeconds)
+            w.u32(radio.rxAirtimeSeconds)
+        case .packets(let packets):
+            w.u8(StatsType.packets.rawValue)
+            for value in [packets.received, packets.sent, packets.sentFlood, packets.sentDirect,
+                          packets.receivedFlood, packets.receivedDirect, packets.receiveErrors] {
+                w.u32(value)
+            }
+        case .unknown(let type, let payload):
+            w.u8(type)
+            w.append(payload)
+        }
+        return w.data
+    }
+
+    private static func encodeLoginSuccess(_ result: LoginResult) -> Data {
+        var w = ByteWriter(code: PushCode.loginSuccess.rawValue)
+        w.u8(result.permissions)
+        w.append(result.senderPrefix.bytes)
+        if let timestamp = result.serverTimestamp {
+            w.u32(timestamp)
+            w.u8(result.aclPermissions ?? 0)
+            w.u8(result.firmwareLevel ?? 0)
+        }
+        return w.data
+    }
+
+    private static func encodePathDiscovery(_ result: PathDiscoveryResult) -> Data {
+        var w = ByteWriter(code: PushCode.pathDiscoveryResponse.rawValue)
+        w.u8(0)
+        w.append(result.senderPrefix.bytes)
+        for path in [result.outPath, result.inPath] {
+            w.u8(path?.encodedLength ?? MeshPath.unknownLength)
+            w.append(path?.bytes ?? [])
+        }
+        return w.data
+    }
+
+    private static func encodeTrace(_ trace: TraceResult) -> Data {
+        var w = ByteWriter(code: PushCode.traceData.rawValue)
+        let hashBytes = trace.pathHashes.flatMap { $0 }
+        w.u8(0)
+        w.u8(UInt8(hashBytes.count))
+        w.u8(trace.flags)
+        w.u32(trace.tag)
+        w.u32(trace.authCode)
+        w.append(hashBytes)
+        w.append(trace.hopSNRs.map { UInt8(bitPattern: Int8(clamping: Int(($0 * 4).rounded()))) })
+        w.i8(Int8(clamping: Int((trace.finalSNR * 4).rounded())))
+        return w.data
     }
 
     private static func encodeContact(_ contact: Contact, code: UInt8) -> Data {
@@ -144,6 +303,29 @@ public enum RadioFrameEncoder {
             w.u8(clientRepeat ? 1 : 0)
             if let mode = info.pathHashMode { w.u8(mode) }
         }
+        return w.data
+    }
+
+    /// `onChannelDataRecv`: SNR×4, two reserved bytes, channel, path length, data type (LE), length, data.
+    private static func encodeChannelData(_ data: ChannelData) -> Data {
+        var w = ByteWriter(code: ResponseCode.channelData.rawValue)
+        w.i8(Int8(clamping: Int((data.snr * 4).rounded())))
+        w.append([0, 0])
+        w.u8(data.channelIndex)
+        w.u8(data.routing.pathLength)
+        w.u16(data.dataType)
+        w.u8(UInt8(clamping: data.payload.count))
+        w.append(data.payload.prefix(Int(UInt8.max)))
+        return w.data
+    }
+
+    /// `onRawDataRecv` / `onControlDataRecv`: SNR×4, RSSI, path length, payload.
+    private static func encodeRadioPacket(_ packet: RadioPacket, code: UInt8) -> Data {
+        var w = ByteWriter(code: code)
+        w.i8(Int8(clamping: Int((packet.snr * 4).rounded())))
+        w.i8(packet.rssi)
+        w.u8(packet.pathLength)
+        w.append(packet.payload)
         return w.data
     }
 

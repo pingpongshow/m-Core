@@ -34,16 +34,24 @@ public enum RelativeAge {
 /// State of the GPS Feed for the connected radio (PLAN.md §4.1):
 /// a radio with GPS uses its own; a radio without GPS is fed the phone's position.
 public enum GPSFeedStatus: Equatable, Sendable {
+    case notConnected
     case off
     case radioGPS(lastPositionAge: TimeInterval?)
+    case radioGPSOff
     case phone(accuracyMeters: Double, lastSyncAge: TimeInterval?)
     case waitingForPhoneLocation
     case locationAccessNeeded
+    /// The phone feed is on but held back, e.g. "Low Power Mode".
+    case paused(reason: String)
 
     public var text: String {
         switch self {
+        case .notConnected:
+            "No radio connected"
         case .off:
             "GPS Feed off"
+        case .radioGPSOff:
+            "Radio GPS is off"
         case .radioGPS(let age?):
             "Radio GPS · \(RelativeAge.text(seconds: age))"
         case .radioGPS(nil):
@@ -54,25 +62,32 @@ public enum GPSFeedStatus: Equatable, Sendable {
             "Waiting for location"
         case .locationAccessNeeded:
             "Location access needed"
+        case .paused(let reason):
+            "Paused · \(reason)"
         }
     }
 
     public var systemImage: String {
         switch self {
+        case .notConnected: "antenna.radiowaves.left.and.right.slash"
         case .off: "location.slash"
+        case .radioGPSOff: "location.slash"
         case .radioGPS: "antenna.radiowaves.left.and.right"
         case .phone: "location.fill"
         case .waitingForPhoneLocation: "location"
         case .locationAccessNeeded: "exclamationmark.triangle.fill"
+        case .paused: "pause.circle"
         }
     }
 
     public var tone: StatusTone {
         switch self {
-        case .off: .neutral
+        case .off, .notConnected: .neutral
+        case .radioGPSOff: .warning
         case .radioGPS, .phone: .positive
         case .waitingForPhoneLocation: .warning
         case .locationAccessNeeded: .critical
+        case .paused: .warning
         }
     }
 }
@@ -113,6 +128,7 @@ public struct StatusPill: View {
     private let text: String
     private let systemImage: String
     private let tone: StatusTone
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     public init(text: String, systemImage: String, tone: StatusTone) {
         self.text = text
@@ -135,7 +151,8 @@ public struct StatusPill: View {
             Text(text)
         }
         .font(.footnote.weight(.medium))
-        .lineLimit(1)
+        // One line normally; at accessibility sizes wrap rather than cut off "synced 12 s ago".
+        .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
         .padding(.horizontal, MCSpacing.s + 2)
         .padding(.vertical, MCSpacing.xs + 2)
         .background(Capsule().fill(MCColor.chipBackground))

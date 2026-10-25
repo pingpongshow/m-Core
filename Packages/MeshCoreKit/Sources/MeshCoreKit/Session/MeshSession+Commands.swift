@@ -130,4 +130,26 @@ extension MeshSession {
             return nil
         }
     }
+
+    /// Has the radio sign `data` with its own Ed25519 key (the key never leaves the radio).
+    public func sign(_ data: Data) async throws -> Data {
+        let maxLength = try await request(.signStart) {
+            if case .signStart(let maxLength) = $0 { return maxLength }
+            return nil
+        }
+        guard data.count <= Int(maxLength) else { throw MeshError.device(.tableFull, .signStart) }
+        var offset = 0
+        while offset < data.count {
+            let end = min(offset + Self.signChunkSize, data.count)
+            try await perform(.signData(data.subdata(in: offset..<end)))
+            offset = end
+        }
+        return try await request(.signFinish) {
+            if case .signature(let signature) = $0 { return signature }
+            return nil
+        }
+    }
+
+    /// Fits a sign-data frame comfortably inside the companion frame limit.
+    static let signChunkSize = 128
 }

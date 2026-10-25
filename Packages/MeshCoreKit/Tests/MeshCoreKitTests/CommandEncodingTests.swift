@@ -102,6 +102,14 @@ struct CommandEncodingTests {
         #expect(Command.setTuningParams(TuningParams(rxDelayBase: 0, airtimeFactor: 1)).encoded() == hex("15", "00000000", "e8030000"))
     }
 
+    @Test func setTuningParamsClampsOutOfRangeValuesInsteadOfTrapping() {
+        // Values like these can arrive in an imported radio profile; UInt32(-1000.0) used to crash.
+        let negativeAndNaN = Command.setTuningParams(TuningParams(rxDelayBase: -1, airtimeFactor: .nan))
+        #expect(negativeAndNaN.encoded() == hex("15", "00000000", "00000000"))
+        let huge = Command.setTuningParams(TuningParams(rxDelayBase: 1e12, airtimeFactor: .infinity))
+        #expect(huge.encoded() == hex("15", "ffffffff", "ffffffff"))
+    }
+
     @Test func keyedCommands() {
         #expect(Command.getContactByKey(sampleKey).encoded() == hex("1e", sampleKeyHex))
         #expect(Command.removeContact(sampleKey).encoded() == hex("0f", sampleKeyHex))
@@ -153,10 +161,11 @@ struct CommandEncodingTests {
         let frame = Command.addUpdateContact(contact).encoded()
         let expected = hex(
             "09", sampleKeyHex, "02", "01", "02", "1020" + zeros(62),
-            padded("Repeater 1", 32), "78563412", "34664002", "3807b4f8", "04030201"
+            padded("Repeater 1", 32), "78563412", "34664002", "3807b4f8"
         )
         #expect(frame == expected)
-        #expect(frame.count == 148)
+        // No trailing lastmod: the firmware falls back to its own clock, so incremental sync sees the change.
+        #expect(frame.count == 144)
     }
 
     @Test func addUpdateContactWithUnknownPath() {

@@ -68,7 +68,9 @@ extension Command {
             w.u32(contact.lastAdvert)
             w.i32(contact.latitudeE6)
             w.i32(contact.longitudeE6)
-            w.u32(contact.lastModified)
+            // `lastModified` is left off on purpose: the firmware then stamps the record with its own clock.
+            // Sending it back would store the app's (often 0 or stale) value, and `getContacts(since:)`
+            // would never return the added or edited contact.
         case .setAutoAddConfig(let config):
             w.u8(config.flags)
             if let maxHops = config.maxHops { w.u8(maxHops) }
@@ -104,8 +106,8 @@ extension Command {
         case .setRadioTxPower(let dbm):
             w.i8(dbm)
         case .setTuningParams(let params):
-            w.u32(UInt32((params.rxDelayBase * 1000).rounded()))
-            w.u32(UInt32((params.airtimeFactor * 1000).rounded()))
+            w.u32(ByteWriter.thousandths(params.rxDelayBase))
+            w.u32(ByteWriter.thousandths(params.airtimeFactor))
         case .getTuningParams, .getAllowedRepeatFrequencies, .getDefaultFloodScope:
             break
         case .setPathHashMode(let mode):

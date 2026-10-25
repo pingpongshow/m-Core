@@ -119,6 +119,9 @@ struct RoundTripTests {
             )),
             .channelMessage(ChannelMessage(channelIndex: 3, routing: .direct, senderTimestamp: 1, text: "A: b", snr: 1.5)),
             .batteryAndStorage(state.battery), .customVars(["gps": "1"]), .cliReply("ok"),
+            .channelData(ChannelData(snr: -1.25, channelIndex: 2, routing: .direct, dataType: 0xBEEF, payload: Data([9, 8]))),
+            .advertPath(AdvertPath(receivedAt: 77, path: MeshPath(hashSize: 2, hashes: [[1, 2], [3, 4]]))),
+            .defaultFloodScope(nil), .defaultFloodScope(FloodScope(name: "#bay", key: [UInt8](repeating: 7, count: 16))),
         ]
         for response in responses {
             let frame = try #require(RadioFrameEncoder.encode(response))
@@ -131,6 +134,8 @@ struct RoundTripTests {
             .messagesWaiting, .contactsFull, .advert(sampleKey), .pathUpdated(sampleKey), .contactDeleted(sampleKey),
             .sendConfirmed(SendConfirmation(ackCode: 1, roundTripMs: 2)),
             .newAdvert(Contact(publicKey: sampleKey, type: .chat, name: "New")),
+            .rawData(RadioPacket(snr: 3.5, rssi: -90, pathLength: 0xFF, payload: Data([1, 2, 3, 4]))),
+            .controlData(RadioPacket(snr: -4, rssi: -110, pathLength: 2, payload: Data([0x90, 1]))),
         ]
         for push in pushes {
             let frame = try #require(RadioFrameEncoder.encode(push))

@@ -31,6 +31,7 @@ public struct DesignGalleryView: View {
         Section("Colours") {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 64))], spacing: MCSpacing.m) {
                 swatch("Accent", MCColor.accent)
+                swatch("Accent fill", MCColor.accentFill)
                 swatch("Incoming", MCColor.bubbleIncoming)
                 swatch("Positive", MCColor.positive)
                 swatch("Warning", MCColor.warning)
@@ -119,6 +120,8 @@ public struct DesignGalleryView: View {
                 StatusPill(gps: .waitingForPhoneLocation)
                 StatusPill(gps: .locationAccessNeeded)
                 StatusPill(gps: .off)
+                StatusPill(gps: .radioGPSOff)
+                StatusPill(gps: .notConnected)
                 StatusPill(connection: .connected(name: "Heltec V3"))
                 StatusPill(connection: .connecting(name: nil))
                 StatusPill(connection: .disconnected)

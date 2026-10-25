@@ -79,9 +79,56 @@ struct SessionTests {
         await #expect(throws: MeshError.device(.illegalArgument, .setAdvertLatLon)) {
             try await session.perform(.setAdvertLatLon(latitudeE6: 91_000_000, longitudeE6: 0))
         }
-        await #expect(throws: MeshError.device(.unsupportedCommand, .getChannel)) {
-            _ = try await session.getChannel(index: 0)
+        await #expect(throws: MeshError.device(.unsupportedCommand, .hasConnection)) {
+            try await session.perform(.hasConnection(MockRadio.demoKey(0x01)))
         }
+        await #expect(throws: MeshError.device(.notFound, .getChannel)) {
+            _ = try await session.getChannel(index: 40) // past the sample radio's 40-slot table
+        }
+    }
+
+    @Test func unusedChannelSlotsReadBackEmptyLikeFirmware() async throws {
+        // BaseChatMesh::getChannel answers every index below MAX_GROUP_CHANNELS. The simulator used to say
+        // "not found" for a gap, which made the app's channel sync stop early and hide later channels.
+        let radio = MockRadio()
+        radio.update { $0.channels.append(ChannelInfo(index: 2, name: "Two", secret: [UInt8](repeating: 2, count: 16))) }
+        let (session, _) = try await openSession(radio)
+
+        #expect(try await session.getChannel(index: 1) == ChannelInfo(index: 1, name: "", secret: [UInt8](repeating: 0, count: 16)))
+        #expect(try await session.getChannel(index: 2).name == "Two")
+        await #expect(throws: MeshError.device(.notFound, .setChannel)) {
+            try await session.perform(.setChannel(ChannelInfo(index: 40, name: "x", secret: [UInt8](repeating: 0, count: 16))))
+        }
+    }
+
+    @Test func queuedChannelDataIsDelivered() async throws {
+        // The simulator had no encoder for RESP_CODE_CHANNEL_DATA_RECV, so this reply was dropped and the sync timed out.
+        let radio = MockRadio()
+        let datagram = ChannelData(snr: 2.5, channelIndex: 1, routing: .flood(hops: 3), dataType: 0x1234, payload: Data([1, 2, 3]))
+        radio.update { $0.queuedMessages = [.channelData(datagram)] }
+        let (session, _) = try await openSession(radio, timeout: .milliseconds(300))
+
+        #expect(try await session.syncNextMessage() == .channelData(datagram))
+        #expect(try await session.syncNextMessage() == nil)
+    }
+
+    @Test func failedCommandsRaiseNoFollowUpPushes() throws {
+        // The firmware answers ERR_CODE_NOT_FOUND and sends nothing, so no ACK or login result can follow.
+        let radio = MockRadio()
+        let message = Command.sendTextMessage(to: samplePrefix, text: "hi", timestamp: 1).encoded()
+        #expect(radio.respond(to: message) == [hex("0102")])
+        #expect(radio.respond(to: Command.sendLogin(to: otherKey, password: "password").encoded()) == [hex("0102")])
+    }
+
+    @Test func signSendsDataInChunksAndReturnsSignature() async throws {
+        let radio = MockRadio()
+        let (session, transport) = try await openSession(radio)
+        let data = Data((0..<300).map { UInt8($0 & 0xFF) })
+        let signature = try await session.sign(data)
+        #expect(signature == MockRadio.demoSignature(of: data))
+        let signDataFrames = transport.sentFrames.filter { $0.first == CommandCode.signData.rawValue }
+        #expect(signDataFrames.count == 3)
+        #expect(radio.current.signBuffer == nil)
     }
 
     @Test func setAdvertLatLonUpdatesRadio() async throws {
@@ -291,6 +338,15 @@ struct ConnectionTests {
         #expect(backoff.delay(afterFailedAttempt: 2) == .seconds(2))
         #expect(backoff.delay(afterFailedAttempt: 5) == .seconds(16))
         #expect(backoff.delay(afterFailedAttempt: 10) == .seconds(30))
+    }
+
+    @Test func backoffStaysCappedThroughALongOutage() {
+        // Each failed attempt waits ~30 s, so attempt 70 is about half an hour without the radio.
+        // `initial * 2^69` overflowed Duration and crashed the reconnect loop.
+        let backoff = ReconnectBackoff()
+        for attempt in [68, 69, 70, 1_100, Int.max] {
+            #expect(backoff.delay(afterFailedAttempt: attempt) == .seconds(30))
+        }
     }
 }
 

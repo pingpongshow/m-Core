@@ -15,8 +15,11 @@ public struct ReconnectBackoff: Equatable, Sendable {
     /// Delay before retry number `attempt` (1-based).
     public func delay(afterFailedAttempt attempt: Int) -> Duration {
         let factor = pow(multiplier, Double(max(0, attempt - 1)))
-        let scaled = initial * factor
-        return min(scaled, maximum)
+        // Compare in seconds first: `Duration * Double` traps once the product leaves Duration's range,
+        // which a long outage reaches after a few dozen attempts.
+        let seconds = initial / .seconds(1) * factor
+        guard seconds.isFinite, seconds < maximum / .seconds(1) else { return maximum }
+        return initial * factor
     }
 }
 
@@ -106,7 +109,7 @@ public actor MeshConnection {
                 self.session = nil
             } catch {
                 attemptSession = nil
-                lastError = String(describing: error)
+                lastError = error.localizedDescription
                 await session.close()
             }
             guard !Task.isCancelled else { break }

@@ -10,9 +10,10 @@ let package = Package(
     dependencies: [
         .package(path: "../MeshCoreKit"),
         .package(path: "../MeshStore"),
+        .package(path: "../MeshTools"),
     ],
     targets: [
-        .target(name: "MeshServices", dependencies: ["MeshCoreKit", "MeshStore"]),
+        .target(name: "MeshServices", dependencies: ["MeshCoreKit", "MeshStore", "MeshTools"]),
         .testTarget(name: "MeshServicesTests", dependencies: ["MeshServices"]),
     ]
 )

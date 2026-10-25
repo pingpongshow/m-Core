@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "baseURLs": [
+    "https://build.protomaps.com/"
+  ],
+  "maxAgeDays": 14
+}

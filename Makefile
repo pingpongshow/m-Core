@@ -3,7 +3,7 @@ PROJECT := mCore.xcodeproj
 PACKAGES := $(wildcard Packages/*)
 DESTINATION ?= $(shell scripts/sim-destination.sh)
 
-.PHONY: generate build test test-packages lint clean
+.PHONY: generate build test test-packages lint strings clean
 
 generate:
 	xcodegen generate --quiet
@@ -26,6 +26,10 @@ lint:
 	else \
 		echo "swiftlint not installed (brew install swiftlint); skipping"; \
 	fi
+
+# Syncs App/Resources/Localizable.xcstrings with the strings used in code (Xcode does this when building in the IDE).
+strings: generate
+	xcodebuild -exportLocalizations -project $(PROJECT) -localizationPath build/localization -exportLanguage en -sdk iphonesimulator -quiet
 
 clean:
 	rm -rf $(PROJECT) DerivedData build

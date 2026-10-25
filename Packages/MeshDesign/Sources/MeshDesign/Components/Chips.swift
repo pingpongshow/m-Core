@@ -18,6 +18,7 @@ public struct PathChip: View {
         .padding(.horizontal, MCSpacing.s)
         .padding(.vertical, MCSpacing.xs)
         .background(Capsule().fill(MCColor.chipBackground))
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel("Path \(route.text)")
     }
 
@@ -74,7 +75,7 @@ public struct CountBadge: View {
             .foregroundStyle(.white)
             .padding(.horizontal, MCSpacing.xs + 2)
             .frame(minWidth: 20, minHeight: 20)
-            .background(Capsule().fill(MCColor.accent))
+            .background(Capsule().fill(MCColor.accentFill))
             .accessibilityLabel(accessibilityText)
     }
 
@@ -118,7 +119,7 @@ public struct FilterChipBar<Option: Hashable>: View {
                             .padding(.horizontal, MCSpacing.m)
                             .padding(.vertical, MCSpacing.xs + 2)
                             .foregroundStyle(isSelected ? Color.white : Color.primary)
-                            .background(Capsule().fill(isSelected ? MCColor.accent : MCColor.chipBackground))
+                            .background(Capsule().fill(isSelected ? MCColor.accentFill : MCColor.chipBackground))
                     }
                     .buttonStyle(.plain)
                     .accessibilityAddTraits(isSelected ? .isSelected : [])

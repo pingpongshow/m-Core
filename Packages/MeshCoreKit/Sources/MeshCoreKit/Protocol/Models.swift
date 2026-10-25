@@ -261,6 +261,12 @@ public struct ChannelInfo: Equatable, Hashable, Sendable {
 
 /// Acknowledgement that a message or request was queued (`RESP_CODE_SENT`).
 public struct SentInfo: Equatable, Hashable, Sendable {
+    public init(isFlood: Bool, tag: UInt32, estimatedTimeoutMs: UInt32) {
+        self.isFlood = isFlood
+        self.tag = tag
+        self.estimatedTimeoutMs = estimatedTimeoutMs
+    }
+
     public var isFlood: Bool
     /// Expected ACK code (messages) or request tag (requests).
     public var tag: UInt32
@@ -268,42 +274,15 @@ public struct SentInfo: Equatable, Hashable, Sendable {
 }
 
 public struct BatteryAndStorage: Equatable, Hashable, Sendable {
+    public init(millivolts: UInt16, usedKB: UInt32, totalKB: UInt32) {
+        self.millivolts = millivolts
+        self.usedKB = usedKB
+        self.totalKB = totalKB
+    }
+
     public var millivolts: UInt16
     public var usedKB: UInt32
     public var totalKB: UInt32
-}
-
-public struct CoreStats: Equatable, Hashable, Sendable {
-    public var batteryMillivolts: UInt16
-    public var uptimeSeconds: UInt32
-    public var errorFlags: UInt16
-    public var outboundQueueLength: UInt8
-}
-
-public struct RadioStats: Equatable, Hashable, Sendable {
-    public var noiseFloorDbm: Int16
-    public var lastRSSI: Int8
-    /// dB, 0.25 dB precision.
-    public var lastSNR: Double
-    public var txAirtimeSeconds: UInt32
-    public var rxAirtimeSeconds: UInt32
-}
-
-public struct PacketStats: Equatable, Hashable, Sendable {
-    public var received: UInt32
-    public var sent: UInt32
-    public var sentFlood: UInt32
-    public var sentDirect: UInt32
-    public var receivedFlood: UInt32
-    public var receivedDirect: UInt32
-    public var receiveErrors: UInt32
-}
-
-public enum Stats: Equatable, Hashable, Sendable {
-    case core(CoreStats)
-    case radio(RadioStats)
-    case packets(PacketStats)
-    case unknown(type: UInt8, payload: Data)
 }
 
 public struct TuningParams: Equatable, Hashable, Sendable {
@@ -337,6 +316,11 @@ public struct AutoAddConfig: Equatable, Hashable, Sendable {
 
 /// The path an advert from a node arrived on (`RESP_CODE_ADVERT_PATH`).
 public struct AdvertPath: Equatable, Hashable, Sendable {
+    public init(receivedAt: UInt32, path: MeshPath?) {
+        self.receivedAt = receivedAt
+        self.path = path
+    }
+
     public var receivedAt: UInt32
     public var path: MeshPath?
 }
@@ -377,6 +361,11 @@ public struct FloodScope: Equatable, Hashable, Sendable {
 }
 
 public struct FrequencyRange: Equatable, Hashable, Sendable {
+    public init(lowerKHz: UInt32, upperKHz: UInt32) {
+        self.lowerKHz = lowerKHz
+        self.upperKHz = upperKHz
+    }
+
     public var lowerKHz: UInt32
     public var upperKHz: UInt32
 }

@@ -19,6 +19,11 @@ struct StatusTests {
 
     @Test func gpsFeedText() {
         #expect(GPSFeedStatus.off.text == "GPS Feed off")
+        #expect(GPSFeedStatus.notConnected.text == "No radio connected")
+        #expect(GPSFeedStatus.radioGPSOff.text == "Radio GPS is off")
+        #expect(GPSFeedStatus.radioGPSOff.tone == .warning)
+        #expect(GPSFeedStatus.paused(reason: "Low Power Mode").text == "Paused · Low Power Mode")
+        #expect(GPSFeedStatus.paused(reason: "x").tone == .warning)
         #expect(GPSFeedStatus.radioGPS(lastPositionAge: nil).text == "Radio GPS")
         #expect(GPSFeedStatus.radioGPS(lastPositionAge: 12).text == "Radio GPS · 12 s ago")
         #expect(GPSFeedStatus.phone(accuracyMeters: 7.6, lastSyncAge: 12).text == "Phone · ±8 m · synced 12 s ago")

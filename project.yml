@@ -15,8 +15,14 @@ settings:
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
     ENABLE_USER_SCRIPT_SANDBOXING: YES
+    # Strings are collected into App/Resources/Localizable.xcstrings for translation.
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+    SWIFT_EMIT_LOC_STRINGS: YES
 
 packages:
+  MapLibre:
+    url: https://github.com/maplibre/maplibre-gl-native-distribution
+    exactVersion: 6.28.0
   MeshCoreKit:
     path: Packages/MeshCoreKit
   MeshServices:
@@ -27,6 +33,8 @@ packages:
     path: Packages/MeshStore
   MeshDesign:
     path: Packages/MeshDesign
+  MeshTools:
+    path: Packages/MeshTools
 
 targets:
   mCore:
@@ -35,6 +43,60 @@ targets:
     sources:
       - App/Sources
       - App/Resources
+      - path: App/Glyphs
+        type: folder
+        buildPhase: resources
+      - path: App/Maps/world-overview.pmtiles
+        buildPhase: resources
+    info:
+      path: App/Info.plist
+      properties:
+        UIBackgroundModes:
+          - bluetooth-central
+          - location
+        # iPad multi-window (a chat can open in its own window).
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+        # Plain HTTP only to local-network hosts (Wi-Fi radios, the debug map source); everything else stays HTTPS.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        # AccessorySetupKit pairing for Bluetooth radios (Nordic UART service); see App/Sources/Radio/AccessoryPairing.swift.
+        NSAccessorySetupKitSupports:
+          - Bluetooth
+        NSAccessorySetupBluetoothServices:
+          - 6E400001-B5A3-F393-E0A9-E50E24DCCA9E
+        CFBundleURLTypes:
+          - CFBundleURLName: app.mcore.links
+            CFBundleURLSchemes:
+              - meshcore
+        # Offline map files opened from Files or AirDrop are copied into the app's inbox, then imported.
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: PMTiles Map
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes:
+              - com.protomaps.pmtiles
+          - CFBundleTypeName: MBTiles Map
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes:
+              - com.mapbox.mbtiles
+        LSSupportsOpeningDocumentsInPlace: false
+        UTImportedTypeDeclarations:
+          - UTTypeIdentifier: com.protomaps.pmtiles
+            UTTypeDescription: PMTiles Map
+            UTTypeConformsTo:
+              - public.data
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - pmtiles
+          - UTTypeIdentifier: com.mapbox.mbtiles
+            UTTypeDescription: MBTiles Map
+            UTTypeConformsTo:
+              - public.data
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - mbtiles
     settings:
       base:
         PRODUCT_NAME: mCore
@@ -51,12 +113,16 @@ targets:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "m-Core uses Bluetooth to connect to your MeshCore radio."
         INFOPLIST_KEY_NSLocalNetworkUsageDescription: "m-Core connects to Wi-Fi MeshCore radios on your local network."
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "m-Core sends your location to a MeshCore radio without GPS so it can share an accurate position, and shows you on the map."
+        INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription: "With Always access, m-Core keeps your radio's position current even when the app isn't open."
     dependencies:
+      - package: MapLibre
       - package: MeshCoreKit
       - package: MeshServices
       - package: MeshMaps
       - package: MeshStore
       - package: MeshDesign
+      - package: MeshTools
 
   mCoreTests:
     type: bundle.unit-test
@@ -84,3 +150,4 @@ schemes:
         - package: MeshMaps/MeshMapsTests
         - package: MeshStore/MeshStoreTests
         - package: MeshDesign/MeshDesignTests
+        - package: MeshTools/MeshToolsTests

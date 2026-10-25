@@ -1,0 +1,1841 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "· %@" : {
+
+    },
+    "· %lld hop%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "· %1$lld hop%2$@"
+          }
+        }
+      }
+    },
+    "· %lld sent" : {
+
+    },
+    "#channel" : {
+
+    },
+    "%@ · %@ tiles" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ tiles"
+          }
+        }
+      }
+    },
+    "%@ (%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (%2$lld)"
+          }
+        }
+      }
+    },
+    "%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%@ dB" : {
+
+    },
+    "%@ dB · %lld dBm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ dB · %2$lld dBm"
+          }
+        }
+      }
+    },
+    "%@ history, %lld readings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ history, %2$lld readings"
+          }
+        }
+      }
+    },
+    "%@ kHz" : {
+
+    },
+    "%@ of %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@"
+          }
+        }
+      }
+    },
+    "%@ telemetry" : {
+
+    },
+    "%@ uses them after a reboot. If they don't match your radio, you'll lose contact with it." : {
+
+    },
+    "%d dBm · %@ dB" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$d dBm · %2$@ dB"
+          }
+        }
+      }
+    },
+    "%lld" : {
+
+    },
+    "%lld bytes left" : {
+
+    },
+    "%lld bytes over the limit" : {
+
+    },
+    "%lld dBm" : {
+
+    },
+    "%lld heard" : {
+
+    },
+    "%lld hop%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld hop%2$@"
+          }
+        }
+      }
+    },
+    "%lld hops have no known position and aren't drawn." : {
+
+    },
+    "%lld missed" : {
+
+    },
+    "%lld nodes · %lld packets" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld nodes · %2$lld packets"
+          }
+        }
+      }
+    },
+    "%lld of %lld slots used on the radio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld slots used on the radio."
+          }
+        }
+      }
+    },
+    "© OpenStreetMap contributors" : {
+
+    },
+    "© OpenStreetMap contributors (ODbL)" : {
+
+    },
+    "0.0" : {
+
+    },
+    "1 hop has no known position and isn't drawn." : {
+
+    },
+    "1 km" : {
+
+    },
+    "1 min" : {
+
+    },
+    "2 min" : {
+
+    },
+    "3 min" : {
+
+    },
+    "4/%lld" : {
+
+    },
+    "4/%u" : {
+
+    },
+    "5 km" : {
+
+    },
+    "5 min" : {
+
+    },
+    "10 km" : {
+
+    },
+    "15 s" : {
+
+    },
+    "30 s" : {
+
+    },
+    "500 m" : {
+
+    },
+    "869.618" : {
+
+    },
+    "About" : {
+
+    },
+    "About m-Core" : {
+
+    },
+    "Actions" : {
+
+    },
+    "Add" : {
+
+    },
+    "Add again" : {
+
+    },
+    "Add as contact" : {
+
+    },
+    "Add channel" : {
+
+    },
+    "Add Channel" : {
+
+    },
+    "Add Contact" : {
+
+    },
+    "Add custom setting" : {
+
+    },
+    "Add my radio to the map" : {
+
+    },
+    "Add new companions" : {
+
+    },
+    "Add new repeaters" : {
+
+    },
+    "Add new rooms" : {
+
+    },
+    "Add new sensors" : {
+
+    },
+    "Add radio" : {
+
+    },
+    "Add radio shows nearby MeshCore radios; pick yours to let m-Core use it. Scanning only finds radios you've already added. Radios with a PIN ask for it the first time." : {
+
+    },
+    "Add repeater" : {
+
+    },
+    "Add repeaters in the order the trace should travel." : {
+
+    },
+    "Add the frequency and LoRa settings a local mesh uses if they aren't listed below." : {
+
+    },
+    "Add this node to the public map?" : {
+
+    },
+    "Add to favorites" : {
+
+    },
+    "Add to Internet Map" : {
+
+    },
+    "Add to map" : {
+
+    },
+    "Add your radio to the public map?" : {
+
+    },
+    "Adding…" : {
+
+    },
+    "Advert" : {
+
+    },
+    "Advert and telemetry sharing are saved on the radio. Precision rounds the phone position before it's sent." : {
+
+    },
+    "Advert when I move" : {
+
+    },
+    "Advertise to neighbours" : {
+
+    },
+    "Advertise to whole mesh" : {
+
+    },
+    "Adverts and flooding" : {
+
+    },
+    "After moving" : {
+
+    },
+    "Airtime" : {
+
+    },
+    "Alert when heard" : {
+
+    },
+    "All types" : {
+
+    },
+    "Anyone can see %@ and its advertised position on map.meshcore.io." : {
+
+    },
+    "Anyone with this file can impersonate your radio. Store it somewhere safe." : {
+
+    },
+    "Appearance" : {
+
+    },
+    "Apply" : {
+
+    },
+    "Apply LoRa settings" : {
+
+    },
+    "Apply radio settings" : {
+
+    },
+    "Area name" : {
+
+    },
+    "Areas can't cross the 180° line. Move the frame to one side of it." : {
+
+    },
+    "Asking %@ for a position…" : {
+
+    },
+    "Attachments" : {
+
+    },
+    "Back to you" : {
+
+    },
+    "Back up settings" : {
+
+    },
+    "Back Up Settings" : {
+
+    },
+    "Backup" : {
+
+    },
+    "Bandwidth" : {
+
+    },
+    "Basemap tiles from Protomaps" : {
+
+    },
+    "Battery" : {
+
+    },
+    "Battery type" : {
+
+    },
+    "Block" : {
+
+    },
+    "Blocked" : {
+
+    },
+    "Blocked contacts' messages are dropped on this device." : {
+
+    },
+    "Bluetooth" : {
+
+    },
+    "Bluetooth PIN" : {
+
+    },
+    "Broker" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Cancel reply" : {
+
+    },
+    "Change admin password" : {
+
+    },
+    "Change LoRa settings?" : {
+
+    },
+    "Change password" : {
+
+    },
+    "Change the admin password?" : {
+
+    },
+    "Changing the PIN means re-pairing in iOS Settings → Bluetooth." : {
+
+    },
+    "Channel hash" : {
+
+    },
+    "Channel name" : {
+
+    },
+    "Channels" : {
+
+    },
+    "Chats" : {
+
+    },
+    "Chats, nodes, tools, settings" : {
+
+    },
+    "Check line of sight" : {
+
+    },
+    "Checking…" : {
+
+    },
+    "Choose" : {
+
+    },
+    "Clear" : {
+
+    },
+    "Clock" : {
+
+    },
+    "Close" : {
+
+    },
+    "Close route" : {
+
+    },
+    "Coding rate" : {
+
+    },
+    "Coding rate 4/%lld" : {
+
+    },
+    "Command" : {
+
+    },
+    "Command line" : {
+
+    },
+    "Command Palette…" : {
+
+    },
+    "Connect" : {
+
+    },
+    "Connect a radio in Settings → Radio to start chatting." : {
+
+    },
+    "Connect a radio to add this contact to it." : {
+
+    },
+    "Connect a radio to change its settings." : {
+
+    },
+    "Connect a radio to see nodes." : {
+
+    },
+    "Connect a radio to use the mesh and radio tools." : {
+
+    },
+    "Connect to simulated radio" : {
+
+    },
+    "Connected since %@" : {
+
+    },
+    "Connecting…" : {
+
+    },
+    "Connection" : {
+
+    },
+    "Contact" : {
+
+    },
+    "Contact not found" : {
+
+    },
+    "Contacts" : {
+
+    },
+    "Conversation" : {
+
+    },
+    "Copy" : {
+
+    },
+    "Copy full key" : {
+
+    },
+    "Couldn't open chats" : {
+
+    },
+    "Coverage (CSV)" : {
+
+    },
+    "Coverage (GPX)" : {
+
+    },
+    "Coverage walk" : {
+
+    },
+    "Coverage Walk" : {
+
+    },
+    "Create backup" : {
+
+    },
+    "Custom broker" : {
+
+    },
+    "Custom PMTiles URL" : {
+
+    },
+    "Custom profile" : {
+
+    },
+    "Custom Setting" : {
+
+    },
+    "dBm" : {
+
+    },
+    "Debug builds only. A base URL with dated YYYYMMDD.pmtiles builds, or one .pmtiles file, used instead of the Protomaps builds. Leave empty to use Protomaps." : {
+
+    },
+    "Debug builds only. Answers like a real radio for UI testing." : {
+
+    },
+    "Delete" : {
+
+    },
+    "Delete this route?" : {
+
+    },
+    "Design Gallery" : {
+
+    },
+    "Detail" : {
+
+    },
+    "Details" : {
+
+    },
+    "Developer" : {
+
+    },
+    "Device" : {
+
+    },
+    "Direct" : {
+
+    },
+    "Directions" : {
+
+    },
+    "Discard" : {
+
+    },
+    "Disconnect" : {
+
+    },
+    "Dismiss" : {
+
+    },
+    "Distance" : {
+
+    },
+    "Done" : {
+
+    },
+    "Download" : {
+
+    },
+    "Download an area for street detail" : {
+
+    },
+    "Download area" : {
+
+    },
+    "Download Area" : {
+
+    },
+    "Download node list" : {
+
+    },
+    "Downloading" : {
+
+    },
+    "Downloading %@" : {
+
+    },
+    "Downloading…" : {
+
+    },
+    "Downloads that would take offline maps past this limit aren't started." : {
+
+    },
+    "Duplicates dropped" : {
+
+    },
+    "Duration" : {
+
+    },
+    "e.g. SFO" : {
+      "comment" : "A label for the region code.",
+      "isCommentAutoGenerated" : true
+    },
+    "Each change is sent over the mesh and confirmed by %@. Values it didn't report are left as shown." : {
+
+    },
+    "Each ping traces a path to the repeater and back. Packets your radio overhears are logged too. Keep m-Core open while you walk." : {
+
+    },
+    "Each update is saved to the radio's memory, so m-Core only sends when you've moved." : {
+
+    },
+    "Edit" : {
+
+    },
+    "Edit Setting" : {
+
+    },
+    "Elevation" : {
+
+    },
+    "Erase everything" : {
+
+    },
+    "Every" : {
+
+    },
+    "Every %lld h" : {
+
+    },
+    "Every %lld min" : {
+
+    },
+    "Everyone" : {
+
+    },
+    "Everything inside the dashed frame will be saved." : {
+
+    },
+    "Export %@ as CSV" : {
+
+    },
+    "Export CSV" : {
+
+    },
+    "Export GPX" : {
+
+    },
+    "Factory reset" : {
+
+    },
+    "Factory reset the radio?" : {
+
+    },
+    "Favorite" : {
+
+    },
+    "Favourite" : {
+
+    },
+    "Favourites" : {
+
+    },
+    "Filter nodes" : {
+
+    },
+    "Finding the latest map build…" : {
+
+    },
+    "Flood" : {
+
+    },
+    "Flood / direct received" : {
+
+    },
+    "Flood / direct sent" : {
+
+    },
+    "Flood advert" : {
+
+    },
+    "Flood max %lld hops" : {
+
+    },
+    "Flood max limits how many hops flooded packets travel through this node (0–64)." : {
+
+    },
+    "Flood the advert" : {
+
+    },
+    "Forget" : {
+
+    },
+    "Frame an area on the map and m-Core copies just those map tiles from the public OpenStreetMap build made by Protomaps. Downloaded maps work with no signal. You can also import .pmtiles or .mbtiles vector maps from Files or AirDrop." : {
+
+    },
+    "Frequency" : {
+
+    },
+    "Frequency (MHz)" : {
+
+    },
+    "Fresnel zone radius" : {
+
+    },
+    "From → to" : {
+
+    },
+    "Go" : {
+
+    },
+    "Go to" : {
+
+    },
+    "GPS accuracy" : {
+
+    },
+    "GPS Feed" : {
+
+    },
+    "GPS Feed paused in Low Power Mode" : {
+
+    },
+    "Guest password" : {
+
+    },
+    "Has location" : {
+
+    },
+    "Hash" : {
+
+    },
+    "Hashtag channels use a key derived from the name, so anyone using the same name joins the same channel." : {
+
+    },
+    "Heard" : {
+
+    },
+    "Heard %@" : {
+
+    },
+    "Heard since launch" : {
+
+    },
+    "Height" : {
+
+    },
+    "Heights are above the ground. Terrain comes from Open-Meteo's elevation service, so this needs an internet connection." : {
+
+    },
+    "Help" : {
+
+    },
+    "High contrast" : {
+
+    },
+    "Hops" : {
+
+    },
+    "Host" : {
+
+    },
+    "Host or IP address" : {
+
+    },
+    "Identity" : {
+
+    },
+    "Ignore fixes worse than" : {
+
+    },
+    "Image from %@" : {
+
+    },
+    "Image unavailable" : {
+
+    },
+    "Import map file" : {
+
+    },
+    "Importing %@…" : {
+
+    },
+    "Include private key" : {
+
+    },
+    "Info" : {
+
+    },
+    "Internet Map" : {
+
+    },
+    "Internet Map nodes" : {
+
+    },
+    "Internet Map: map.meshcore.io" : {
+
+    },
+    "Its signed advert and your radio's settings are sent to map.meshcore.io, signed by your radio." : {
+
+    },
+    "Jump to latest" : {
+
+    },
+    "Jump to latest, %lld new" : {
+
+    },
+    "Kept on this device only and cleared when m-Core quits. The export includes the packets shown." : {
+
+    },
+    "Key" : {
+
+    },
+    "km" : {
+
+    },
+    "Last advert" : {
+
+    },
+    "Last heard" : {
+
+    },
+    "Last packet" : {
+
+    },
+    "Last sent" : {
+
+    },
+    "Last signal" : {
+
+    },
+    "Latest" : {
+
+    },
+    "Latitude" : {
+
+    },
+    "Layers" : {
+
+    },
+    "Leave empty to use the name the radio reports." : {
+
+    },
+    "Leave the key empty to create a new private channel, or paste a 32-character hex key to join one." : {
+
+    },
+    "left" : {
+
+    },
+    "Leg %lld" : {
+
+    },
+    "Lets nearby nodes see your new position. At most one advert every 15 minutes; flooding reaches further but uses more airtime." : {
+
+    },
+    "LetsMesh signs you in with a token your radio signs, so no password is needed. The region code is the nearest airport's three-letter IATA code. Pause in background disconnects while m-Core isn't open." : {
+
+    },
+    "Line" : {
+
+    },
+    "Line of sight" : {
+
+    },
+    "Line of Sight" : {
+
+    },
+    "Link previews" : {
+
+    },
+    "Listen on each for" : {
+
+    },
+    "Listening on %@ (%lld/%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Listening on %1$@ (%2$lld/%3$lld)"
+          }
+        }
+      }
+    },
+    "Live" : {
+
+    },
+    "Live location" : {
+
+    },
+    "Local Mesh Discovery" : {
+
+    },
+    "Location" : {
+
+    },
+    "Log in" : {
+
+    },
+    "Log in again" : {
+
+    },
+    "Log in to %@" : {
+
+    },
+    "Logging in…" : {
+
+    },
+    "Login" : {
+
+    },
+    "Longitude" : {
+
+    },
+    "LoRa" : {
+
+    },
+    "LoRa settings take effect after a reboot. TX power is at the LoRa chip; boards with an amplifier add to it. Turning off repeat stops this node forwarding other nodes' packets." : {
+
+    },
+    "Lower is quieter. A rising noise floor means interference near the radio." : {
+
+    },
+    "m" : {
+
+    },
+    "m-Core · MeshCore" : {
+
+    },
+    "m-Core is open source under the MIT licence. It's an independent implementation and contains no code from other MeshCore or Meshtastic apps." : {
+
+    },
+    "Manage repeater" : {
+
+    },
+    "Manage room" : {
+
+    },
+    "Map · %@" : {
+
+    },
+    "Map data" : {
+
+    },
+    "Map labels: Noto Sans, SIL Open Font License 1.1" : {
+
+    },
+    "Map of the shared location" : {
+
+    },
+    "map.meshcore.io lists repeaters, rooms and companions people have shared. The list is about 18 MB and is kept on this device, so it works offline. Tap a node on the map to add it as a contact before you're in range." : {
+
+    },
+    "Mark as read" : {
+
+    },
+    "Measuring…" : {
+
+    },
+    "Mesh" : {
+
+    },
+    "Mesh Discovery" : {
+
+    },
+    "MeshCore" : {
+
+    },
+    "MeshCore project" : {
+
+    },
+    "Message" : {
+
+    },
+    "Messages" : {
+
+    },
+    "MHz" : {
+
+    },
+    "Minimum interval" : {
+
+    },
+    "Minimum move" : {
+
+    },
+    "Mute" : {
+
+    },
+    "My location" : {
+
+    },
+    "My radios" : {
+
+    },
+    "My settings" : {
+
+    },
+    "Name" : {
+
+    },
+    "Name (e.g. Valley mesh)" : {
+
+    },
+    "Navigate in Apple Maps" : {
+
+    },
+    "Neighbours (%lld)" : {
+
+    },
+    "Network name" : {
+
+    },
+    "New 6-digit PIN" : {
+
+    },
+    "New admin password" : {
+
+    },
+    "New chat" : {
+
+    },
+    "New Chat" : {
+
+    },
+    "Nickname" : {
+
+    },
+    "No %@" : {
+
+    },
+    "No conversation" : {
+
+    },
+    "No radio" : {
+
+    },
+    "No results" : {
+
+    },
+    "No telemetry yet" : {
+
+    },
+    "Nobody" : {
+
+    },
+    "Nodes" : {
+
+    },
+    "Nodes saved" : {
+
+    },
+    "Noise floor" : {
+
+    },
+    "None" : {
+
+    },
+    "Not heard for over a day" : {
+
+    },
+    "Not sharing" : {
+
+    },
+    "Nothing (just listen)" : {
+
+    },
+    "Nothing heard yet" : {
+
+    },
+    "Notifications" : {
+
+    },
+    "Observer uplink" : {
+
+    },
+    "Observer Uplink" : {
+
+    },
+    "Off" : {
+
+    },
+    "Offline maps" : {
+
+    },
+    "Offline Maps" : {
+
+    },
+    "OK" : {
+
+    },
+    "On" : {
+
+    },
+    "Online services" : {
+
+    },
+    "Only add contacts manually" : {
+
+    },
+    "Only on Wi-Fi" : {
+
+    },
+    "Only shown on this device." : {
+
+    },
+    "Open in Maps" : {
+
+    },
+    "Open in New Window" : {
+
+    },
+    "Opens in Maps" : {
+
+    },
+    "Opens Offline Maps" : {
+
+    },
+    "Options" : {
+
+    },
+    "Other" : {
+
+    },
+    "Packet" : {
+
+    },
+    "Packets" : {
+
+    },
+    "Packets appear here as your radio hears them." : {
+
+    },
+    "Packets sent" : {
+
+    },
+    "Password" : {
+
+    },
+    "Password (blank for guest)" : {
+
+    },
+    "Passwords" : {
+
+    },
+    "Path" : {
+
+    },
+    "Pause" : {
+
+    },
+    "Pause in background" : {
+
+    },
+    "Pause in Low Power Mode" : {
+
+    },
+    "Paused" : {
+
+    },
+    "Paused until you're on Wi-Fi" : {
+
+    },
+    "Paused while Low Power Mode is on. It resumes by itself." : {
+
+    },
+    "Paused while m-Core is in the background" : {
+
+    },
+    "Phone" : {
+
+    },
+    "Phone GPS" : {
+
+    },
+    "Pin" : {
+
+    },
+    "Ping" : {
+
+    },
+    "Ping (find path)" : {
+
+    },
+    "Pinned" : {
+
+    },
+    "Place search: Apple Maps" : {
+
+    },
+    "Points" : {
+
+    },
+    "Port" : {
+
+    },
+    "Position" : {
+
+    },
+    "Position from %@" : {
+
+    },
+    "Position in telemetry" : {
+
+    },
+    "Positions recorded" : {
+
+    },
+    "Power off radio" : {
+
+    },
+    "Precision" : {
+
+    },
+    "Preset" : {
+
+    },
+    "Privacy" : {
+
+    },
+    "Public key" : {
+
+    },
+    "Publishing to" : {
+
+    },
+    "QR code for %@" : {
+
+    },
+    "Queue" : {
+
+    },
+    "Radio" : {
+
+    },
+    "Radio battery %@" : {
+
+    },
+    "Radio GPS" : {
+
+    },
+    "Radio position" : {
+
+    },
+    "Radio settings" : {
+
+    },
+    "Radio Settings" : {
+
+    },
+    "Radio Wi‑Fi" : {
+
+    },
+    "Radio: %@" : {
+
+    },
+    "Radios with a PIN show the system pairing prompt on first connect." : {
+
+    },
+    "Raw" : {
+
+    },
+    "React %@" : {
+
+    },
+    "Read" : {
+
+    },
+    "Reading settings from %@…" : {
+
+    },
+    "Reboot" : {
+
+    },
+    "Reboot %@?" : {
+
+    },
+    "Reboot radio" : {
+
+    },
+    "Receive errors" : {
+
+    },
+    "Received" : {
+
+    },
+    "Recheck every" : {
+
+    },
+    "Reconnect" : {
+
+    },
+    "Recording" : {
+
+    },
+    "Recordings" : {
+
+    },
+    "Records where you go, even with m-Core in the background (iOS shows a blue location indicator). Fixes less accurate than 50 m are skipped, and a point is kept every 10 m you move." : {
+
+    },
+    "Refresh" : {
+
+    },
+    "Refresh status" : {
+
+    },
+    "Refreshing" : {
+
+    },
+    "Region code" : {
+      "comment" : "A label for the region code.",
+      "isCommentAutoGenerated" : true
+    },
+    "Remember password" : {
+
+    },
+    "Remove" : {
+
+    },
+    "Remove %@?" : {
+
+    },
+    "Remove from favorites" : {
+
+    },
+    "Remove from radio" : {
+
+    },
+    "Remove PIN" : {
+
+    },
+    "Rename" : {
+
+    },
+    "Rename area" : {
+
+    },
+    "Rename radio" : {
+
+    },
+    "Rename route" : {
+
+    },
+    "Repeat packets" : {
+
+    },
+    "Replace oldest when full" : {
+
+    },
+    "Reply" : {
+
+    },
+    "Replying to %@" : {
+
+    },
+    "Request position" : {
+
+    },
+    "Request telemetry" : {
+
+    },
+    "Reset path" : {
+
+    },
+    "Restore settings" : {
+
+    },
+    "Restoring your settings…" : {
+
+    },
+    "Result" : {
+
+    },
+    "Results" : {
+
+    },
+    "Resume" : {
+
+    },
+    "Resuming carries on where the download stopped. If the map build has changed since, it starts again." : {
+
+    },
+    "Retry" : {
+
+    },
+    "Retry flood" : {
+
+    },
+    "Retrying at %@" : {
+
+    },
+    "Retrying in %lld s · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Retrying in %1$lld s · %2$@"
+          }
+        }
+      }
+    },
+    "Round trip" : {
+
+    },
+    "Round trip %@" : {
+
+    },
+    "Route" : {
+
+    },
+    "Route deleted" : {
+
+    },
+    "Route recorder" : {
+
+    },
+    "Route Recorder" : {
+
+    },
+    "RSSI" : {
+
+    },
+    "Run" : {
+
+    },
+    "Run trace" : {
+
+    },
+    "RX log" : {
+
+    },
+    "RX Log" : {
+
+    },
+    "Samples" : {
+
+    },
+    "Save" : {
+
+    },
+    "Saved areas" : {
+
+    },
+    "Saves name, LoRa settings, channels and options to a file you can apply to this or another radio." : {
+
+    },
+    "Saving…" : {
+
+    },
+    "Search Chats" : {
+
+    },
+    "Search conversations" : {
+
+    },
+    "Search for a place" : {
+
+    },
+    "Search help" : {
+
+    },
+    "Search nodes (%lld)" : {
+
+    },
+    "Send" : {
+
+    },
+    "Send flood advert" : {
+
+    },
+    "Send message" : {
+
+    },
+    "Send my location" : {
+
+    },
+    "Send phone position" : {
+
+    },
+    "Send queue" : {
+
+    },
+    "Send zero-hop advert" : {
+
+    },
+    "Sends every packet your radio hears to an MQTT broker, so community maps and analyzers can see your part of the mesh. Message contents stay encrypted; packet headers, signal strength and your radio's public key are shared." : {
+
+    },
+    "Sent" : {
+
+    },
+    "Sent at" : {
+
+    },
+    "Set" : {
+
+    },
+    "Set up Wi‑Fi" : {
+
+    },
+    "Settings" : {
+
+    },
+    "Settings need an admin login." : {
+
+    },
+    "SF%lld" : {
+
+    },
+    "SF%u" : {
+
+    },
+    "Share" : {
+
+    },
+    "Share backup file" : {
+
+    },
+    "Share card" : {
+
+    },
+    "Share contact" : {
+
+    },
+    "Share heard packets" : {
+
+    },
+    "Share link" : {
+
+    },
+    "Share position in adverts" : {
+
+    },
+    "Share via advert" : {
+
+    },
+    "Shared key (hex, optional)" : {
+
+    },
+    "Shares your radio's name, public key, advertised position and radio settings publicly. Your radio signs the request; its private key never leaves it. Entries expire if not refreshed for 20 days." : {
+
+    },
+    "Sharing live location" : {
+
+    },
+    "Show" : {
+
+    },
+    "Show on map" : {
+
+    },
+    "Show on the map" : {
+
+    },
+    "Show path on map" : {
+
+    },
+    "Shows a card with the page title and picture for links in messages, and shows image links inline. This phone fetches them from the internet when the message appears, never for blocked contacts. Turn off to keep chats completely offline." : {
+
+    },
+    "Signal" : {
+
+    },
+    "Size" : {
+
+    },
+    "Slot %lld · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Slot %1$lld · %2$@"
+          }
+        }
+      }
+    },
+    "SNR" : {
+
+    },
+    "Sort" : {
+
+    },
+    "Sort by" : {
+      "comment" : "A label for a picker that sorts nodes.",
+      "isCommentAutoGenerated" : true
+    },
+    "Spreading factor" : {
+
+    },
+    "Spreading factor SF%lld" : {
+
+    },
+    "Start" : {
+
+    },
+    "Start live location" : {
+
+    },
+    "Start recording" : {
+
+    },
+    "Start scan (%lld)" : {
+
+    },
+    "Start sharing from the + menu in a chat. Updates go out when you move 50 m, at least every 2 minutes." : {
+
+    },
+    "Started" : {
+
+    },
+    "Stats" : {
+
+    },
+    "Stats & noise floor" : {
+
+    },
+    "Status" : {
+
+    },
+    "Status works for guests; settings and the command line need an admin login." : {
+
+    },
+    "Stop" : {
+
+    },
+    "Stop live location" : {
+
+    },
+    "Stop recording" : {
+
+    },
+    "Stops using the phone's GPS while Low Power Mode is on, so the radio's position isn't updated until it's off again. This applies to every radio." : {
+
+    },
+    "Storage" : {
+
+    },
+    "Storage limit" : {
+
+    },
+    "Stronger colours for status, accents and message bubbles. m-Core also follows Increase Contrast in iOS Settings → Accessibility." : {
+
+    },
+    "Suggested radio settings: api.meshcore.nz, checked once a day from Mesh Discovery" : {
+
+    },
+    "Tap to connect. Swipe to rename or forget a radio." : {
+
+    },
+    "Telemetry" : {
+
+    },
+    "Telemetry history" : {
+
+    },
+    "Telemetry sharing" : {
+
+    },
+    "Terrain" : {
+
+    },
+    "Terrain for line of sight: Open-Meteo (Copernicus DEM)" : {
+
+    },
+    "That area is too big. Zoom in or pick Standard detail." : {
+
+    },
+    "That area is too big. Zoom in." : {
+
+    },
+    "The radio forgets this contact until it hears another advert. Message history stays on this device." : {
+
+    },
+    "The region code is the nearest airport's three-letter IATA code. Pause in background disconnects while m-Core isn't open." : {
+
+    },
+    "Theme" : {
+
+    },
+    "These are saved on the radio." : {
+
+    },
+    "This erases contacts, channels, settings and the radio's identity. It can't be undone." : {
+
+    },
+    "This sender isn't in your contacts, so you can't reply yet. Their advert will add them when it's heard." : {
+
+    },
+    "Time" : {
+
+    },
+    "Tools" : {
+
+    },
+    "Trace %@" : {
+
+    },
+    "Trace path" : {
+
+    },
+    "Trace Path" : {
+
+    },
+    "Tracing…" : {
+
+    },
+    "Turn on radio GPS" : {
+
+    },
+    "TX power" : {
+
+    },
+    "TX power %lld dBm" : {
+
+    },
+    "Type" : {
+
+    },
+    "Unfavorite" : {
+
+    },
+    "Unmute" : {
+
+    },
+    "Unpin" : {
+
+    },
+    "Up to 15 characters. An empty guest password lets anyone log in as a guest." : {
+
+    },
+    "Update node list" : {
+
+    },
+    "Update profile" : {
+
+    },
+    "Updated" : {
+
+    },
+    "Updates today" : {
+
+    },
+    "Updates when" : {
+
+    },
+    "Uploading…" : {
+
+    },
+    "Uptime" : {
+
+    },
+    "Use my phone's location" : {
+
+    },
+    "Use the exact values your local mesh publishes. Radios only hear each other when all four match." : {
+
+    },
+    "Use the same settings as your local mesh. Higher power reaches further but drains the battery faster." : {
+
+    },
+    "Username" : {
+
+    },
+    "Using %@. A world overview is built in. Refresh re-downloads an area from the newest map build." : {
+
+    },
+    "Version" : {
+
+    },
+    "Waiting for your radio" : {
+
+    },
+    "Web flasher" : {
+
+    },
+    "Which nodes the radio adds to its contact list when it hears their adverts." : {
+
+    },
+    "Who can request this radio's telemetry. Favourites are contacts you've starred." : {
+
+    },
+    "Wi‑Fi" : {
+
+    },
+    "Wi‑Fi (TCP)" : {
+
+    },
+    "Wi‑Fi on" : {
+
+    },
+    "Without the key, restoring keeps the target radio's own identity." : {
+
+    },
+    "Working out which tiles to fetch…" : {
+
+    },
+    "Worst Fresnel clearance" : {
+
+    },
+    "You'll need the new password to log in as admin next time." : {
+
+    },
+    "You're on cellular data." : {
+
+    },
+    "Your radio is unreachable on its usual settings while scanning. m-Core always switches back afterwards, even if the scan is interrupted." : {
+
+    },
+    "Your radio will only hear nodes using the same settings." : {
+
+    },
+    "Zero-hop advert" : {
+
+    }
+  },
+  "version" : "1.1"
+}

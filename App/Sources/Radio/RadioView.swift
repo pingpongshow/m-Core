@@ -1,18 +1,22 @@
 import MeshCoreKit
 import MeshDesign
+import MeshServices
 import SwiftUI
 
-/// Settings → Radio: connect over Bluetooth, Wi‑Fi (TCP) or the simulator, and show what the radio reported.
+/// Settings → Radio: connect over Bluetooth or Wi‑Fi (TCP), and show what the radio reported.
 struct RadioView: View {
-    @Environment(RadioConnectionModel.self) private var radio
+    @Environment(RadioController.self) private var radio
+    @Environment(AccessoryPairing.self) private var pairing
     @State private var host = ""
     @State private var port = String(MeshCoreProtocol.defaultTCPPort)
+    @State private var renaming: KnownRadio?
+    @State private var newName = ""
 
     var body: some View {
         List {
             statusSection
-            if let info = radio.connectionInfo {
-                ConnectedRadioSections(info: info, battery: radio.battery)
+            if let info = currentInfo {
+                ConnectedRadioSections(info: info, battery: radio.battery, chemistry: radio.batteryChemistry)
                 Section {
                     Button("Disconnect", role: .destructive) {
                         Task { await radio.disconnect() }
@@ -25,32 +29,71 @@ struct RadioView: View {
                     }
                 }
             } else {
-                if let last = radio.lastTarget {
-                    Section {
-                        Button {
-                            Task { await radio.connect(to: last) }
-                        } label: {
-                            Label("Reconnect to \(last.displayName)", systemImage: "arrow.clockwise")
-                        }
-                    }
-                }
+                if !radio.knownRadios.isEmpty { knownRadiosSection }
                 bluetoothSection
                 tcpSection
-                #if DEBUG
-                Section {
-                    Button {
-                        Task { await radio.connect(to: .simulator) }
-                    } label: {
-                        Label("Connect to simulated radio", systemImage: "cpu")
-                    }
-                } footer: {
-                    Text("Debug builds only. Answers like a real radio for UI testing.")
-                }
-                #endif
             }
         }
         .navigationTitle("Radio")
         .onDisappear { radio.stopScan() }
+        .alert("Rename radio", isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
+            TextField("Name", text: $newName)
+            Button("Save") {
+                if let renaming { radio.renameKnownRadio(renaming, to: newName) }
+                renaming = nil
+            }
+            Button("Cancel", role: .cancel) { renaming = nil }
+        } message: {
+            Text("Leave empty to use the name the radio reports.")
+        }
+    }
+
+    /// The handshake's details, with the identity the radio has reported since (e.g. the position the GPS Feed
+    /// wrote, a new name or radio settings).
+    private var currentInfo: ConnectionInfo? {
+        guard var info = radio.connectionInfo else { return nil }
+        if let selfInfo = radio.selfInfo { info.selfInfo = selfInfo }
+        return info
+    }
+
+    private var knownRadiosSection: some View {
+        Section {
+            ForEach(radio.knownRadios) { known in
+                Button {
+                    Task { await radio.connect(to: known.target) }
+                } label: {
+                    KnownRadioRow(radio: known, needsAdding: needsAdding(known))
+                }
+                .swipeActions {
+                    Button("Forget", role: .destructive) {
+                        Task { await radio.forgetKnownRadio(known) }
+                    }
+                    .tint(MCColor.critical)
+                    Button("Rename") { startRenaming(known) }
+                        .tint(MCColor.accentFill)
+                }
+                .contextMenu {
+                    Button("Rename", systemImage: "pencil") { startRenaming(known) }
+                    Button("Forget", systemImage: "trash", role: .destructive) {
+                        Task { await radio.forgetKnownRadio(known) }
+                    }
+                }
+            }
+        } header: {
+            Text("My radios")
+        } footer: {
+            Text("Tap to connect. Swipe to rename or forget a radio.")
+        }
+    }
+
+    private func needsAdding(_ known: KnownRadio) -> Bool {
+        guard case .bluetooth(let id, _) = known.target else { return false }
+        return pairing.isEnabled && pairing.isReady && !pairing.mayConnect(to: id)
+    }
+
+    private func startRenaming(_ known: KnownRadio) {
+        newName = known.customName ?? ""
+        renaming = known
     }
 
     private var statusSection: some View {
@@ -61,11 +104,24 @@ struct RadioView: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
+            if let problem = radio.connectionProblem ?? pairing.lastError {
+                Label(problem, systemImage: "exclamationmark.triangle.fill")
+                    .font(.footnote)
+                    .foregroundStyle(MCColor.warning)
+            }
         }
     }
 
     private var bluetoothSection: some View {
         Section {
+            if pairing.isEnabled {
+                Button {
+                    pairing.showPicker()
+                } label: {
+                    Label("Add radio", systemImage: "plus.circle.fill")
+                }
+                .disabled(pairing.isPickerShowing || !pairing.isReady)
+            }
             ForEach(radio.discovered.sorted { $0.rssi > $1.rssi }) { found in
                 Button {
                     Task { await radio.connect(to: .bluetooth(id: found.id, name: found.name)) }
@@ -79,7 +135,9 @@ struct RadioView: View {
                     }
                 }
             }
-            Button(radio.isScanning ? "Stop scanning" : "Scan for radios") {
+            // With an icon, like Add radio above it, so the two titles line up.
+            Button(radio.isScanning ? "Stop scanning" : scanTitle,
+                   systemImage: radio.isScanning ? "stop.circle" : "magnifyingglass") {
                 radio.isScanning ? radio.stopScan() : radio.startScan()
             }
         } header: {
@@ -88,8 +146,19 @@ struct RadioView: View {
                 if radio.isScanning { ProgressView().controlSize(.small) }
             }
         } footer: {
-            Text("Radios with a PIN show the system pairing prompt on first connect.")
+            if pairing.isEnabled {
+                Text("""
+                    Add radio shows nearby MeshCore radios; pick yours to let m-Core use it. Scanning only finds radios \
+                    you've already added. Radios with a PIN ask for it the first time.
+                    """)
+            } else {
+                Text("Radios with a PIN show the system pairing prompt on first connect.")
+            }
         }
+    }
+
+    private var scanTitle: String {
+        pairing.isEnabled ? "Find added radios nearby" : "Scan for radios"
     }
 
     private var tcpSection: some View {
@@ -113,6 +182,7 @@ struct RadioView: View {
 struct ConnectedRadioSections: View {
     let info: ConnectionInfo
     let battery: BatteryAndStorage?
+    var chemistry: BatteryChemistry = .lithiumIon
 
     var body: some View {
         Section("Device") {
@@ -123,7 +193,7 @@ struct ConnectedRadioSections: View {
                 row("Capacity", "\(contacts) contacts · \(channels) channels")
             }
             if let battery {
-                row("Battery", String(format: "%.2f V", Double(battery.millivolts) / 1000))
+                row("Battery", chemistry.describe(millivolts: Int(battery.millivolts)))
                 row("Storage", "\(battery.usedKB) of \(battery.totalKB) KB used")
             }
         }
@@ -160,5 +230,41 @@ struct ConnectedRadioSections: View {
 
     private func row(_ title: String, _ value: String?) -> some View {
         LabeledContent(title, value: value?.isEmpty == false ? value! : "—")
+    }
+}
+
+/// One remembered radio: its name, how it connects and when it was last used.
+private struct KnownRadioRow: View {
+    let radio: KnownRadio
+    let needsAdding: Bool
+
+    var body: some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundStyle(MCColor.accent)
+                .frame(width: 28)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+                Text(radio.displayName).foregroundStyle(Color.primary)
+                Text(subtitle).font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            if needsAdding {
+                Text("Add again").font(.caption).foregroundStyle(MCColor.warning)
+            }
+        }
+    }
+
+    private var icon: String {
+        switch radio.target {
+        case .bluetooth: "dot.radiowaves.left.and.right"
+        case .tcp: "wifi"
+        case .simulator: "cpu"
+        }
+    }
+
+    private var subtitle: String {
+        guard let last = radio.lastConnected else { return radio.transportDescription }
+        return "\(radio.transportDescription) · \(last.formatted(.relative(presentation: .named)))"
     }
 }
