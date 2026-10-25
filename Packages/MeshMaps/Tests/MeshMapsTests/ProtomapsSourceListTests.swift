@@ -31,11 +31,16 @@ struct ProtomapsSourceListTests {
         #expect(list.configuration(fallback: .default) == .default)
     }
 
+    @Test func defaultListIsTheRepositoryFileOverHTTPS() {
+        let url = ProtomapsSourceListLoader.defaultRemoteURL
+        #expect(url?.scheme == "https")
+        #expect(url?.absoluteString.hasSuffix("/main/Maps/sources.json") == true)
+    }
+
     @Test func noRemoteURLMeansNoRequestsAndTheDefault() async throws {
         let requests = LockedBox(0)
         let client = listClient(mirrorList, requests: requests)
         let directory = try TemporaryDirectory()
-        #expect(ProtomapsSourceListLoader.defaultRemoteURL == nil)
         let loader = ProtomapsSourceListLoader(remoteURL: nil, cacheURL: directory.file("sources.json"), client: client)
         #expect(await loader.configuration(fallback: .default) == .default)
         #expect(requests.value == 0)

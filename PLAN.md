@@ -293,7 +293,7 @@ Estimates assume one developer.
 - **Code review:** a full review found and fixed 43 defects (among them a reconnect crash after ~30 min out of range, the GPS rule failing when the radio answered slowly, remote commands silently dropped, map screens contacting the MapLibre demo server, corrupt resumed downloads, and contacts added from the app never syncing back), plus the follow-ups.
 - **Tests:** 396 package tests and the app test target pass; SwiftLint reports no violations.
 - **Not yet verified on hardware:** BLE/TCP connections, AccessorySetupKit picker, the GPS Feed on a long drive, whether LetsMesh and map.meshcore.io accept radio-signed requests, TLS/wss to a real broker, remote CLI replies, battery curves.
-- **Still to do (Phase 8):** TestFlight, App Review notes, App Store Connect name reservation and listing, licence check, ask Protomaps about build use, and fill in the public source-list URL.
+- **Still to do (Phase 8):** TestFlight, App Review notes, App Store Connect name reservation and listing, licence check, and ask Protomaps about build use.
 **Total:** about **15–19 weeks** to launch. A **usable build with the GPS feed and chat comes after Phases 0–3, about 5–7 weeks**.
 
 ---

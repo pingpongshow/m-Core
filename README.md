@@ -56,7 +56,7 @@ To run on a device, copy `Config/Local.xcconfig.example` to `Config/Local.xcconf
 | `App/Maps/world-overview.pmtiles` | Bundled z0–5 world overview, extracted from the Protomaps build |
 | `App/Glyphs` | Noto Sans glyphs for map labels (SIL Open Font License) |
 
-Before publishing: set `ProtomapsSourceListLoader.defaultRemoteURL` (MeshMaps) to the raw URL of `Maps/sources.json` in the public repo, so the app can pick up new map sources without an update.
+The app reads its list of map sources from [`Maps/sources.json`](Maps/sources.json) on `main` (cached for a day, falling back to build.protomaps.com). Editing that file moves every installed copy to new map sources without an app update.
 Bluetooth pairing uses AccessorySetupKit; removing `NSAccessorySetupKitSupports`/`NSAccessorySetupBluetoothServices` from `project.yml` makes it a plain CoreBluetooth build.
 
 In debug builds, the Design Gallery (Settings → Developer → Design Gallery) shows every component in the current appearance,

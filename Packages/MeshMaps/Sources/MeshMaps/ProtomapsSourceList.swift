@@ -43,9 +43,9 @@ public struct ProtomapsSourceList: Hashable, Sendable, Codable {
 /// ``refreshInterval`` is used without a request; if a refresh fails, a stale cache is still better than nothing,
 /// and with no cache the built-in configuration is the fallback.
 public struct ProtomapsSourceListLoader: Sendable {
-    /// Where the app fetches the list. Fill this in once the repository is public, e.g. the raw URL of
-    /// `Maps/sources.json` on the main branch. Until then the built-in default is used and nothing is fetched.
-    public static let defaultRemoteURL: URL? = nil
+    /// Where the app fetches the list: `Maps/sources.json` on the main branch of the m-Core repository. Edit that
+    /// file to point every installed app at new or additional map sources without an app update.
+    public static let defaultRemoteURL = URL(string: "https://raw.githubusercontent.com/pingpongshow/m-Core/main/Maps/sources.json")
 
     /// Default cache file in the app's Caches directory.
     nonisolated public static var defaultCacheURL: URL {

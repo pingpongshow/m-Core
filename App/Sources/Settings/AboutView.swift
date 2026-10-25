@@ -21,6 +21,10 @@ struct AboutView: View {
                 Text("Internet Map: map.meshcore.io")
                 Text("Suggested radio settings: api.meshcore.nz, checked once a day from Mesh Discovery")
                 Text("Place search: Apple Maps")
+                Text("Map source list: m-Core's GitHub repository, checked at most once a day when you download maps")
+            }
+            Section("m-Core") {
+                Link("Source code", destination: URL(string: "https://github.com/pingpongshow/m-Core")!)
             }
             Section("MeshCore") {
                 Link("MeshCore project", destination: URL(string: "https://github.com/meshcore-dev/MeshCore")!)
