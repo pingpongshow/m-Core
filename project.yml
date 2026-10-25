@@ -1,0 +1,84 @@
+name: mCore
+
+options:
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+
+configFiles:
+  Debug: Config/Base.xcconfig
+  Release: Config/Base.xcconfig
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+packages:
+  MeshCoreKit:
+    path: Packages/MeshCoreKit
+  MeshServices:
+    path: Packages/MeshServices
+  MeshMaps:
+    path: Packages/MeshMaps
+  MeshStore:
+    path: Packages/MeshStore
+  MeshDesign:
+    path: Packages/MeshDesign
+
+targets:
+  mCore:
+    type: application
+    platform: iOS
+    sources:
+      - App/Sources
+      - App/Resources
+    settings:
+      base:
+        PRODUCT_NAME: mCore
+        PRODUCT_BUNDLE_IDENTIFIER: $(MCORE_BUNDLE_ID)
+        DEVELOPMENT_TEAM: $(MCORE_DEVELOPMENT_TEAM)
+        CODE_SIGN_STYLE: Automatic
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: m-Core
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    dependencies:
+      - package: MeshCoreKit
+      - package: MeshServices
+      - package: MeshMaps
+      - package: MeshStore
+      - package: MeshDesign
+
+  mCoreTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - AppTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(MCORE_BUNDLE_ID).tests
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: mCore
+
+schemes:
+  mCore:
+    build:
+      targets:
+        mCore: all
+    test:
+      gatherCoverageData: true
+      targets:
+        - mCoreTests
+        - package: MeshCoreKit/MeshCoreKitTests
+        - package: MeshServices/MeshServicesTests
+        - package: MeshMaps/MeshMapsTests
+        - package: MeshStore/MeshStoreTests
+        - package: MeshDesign/MeshDesignTests

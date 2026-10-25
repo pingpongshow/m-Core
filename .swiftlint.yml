@@ -1,0 +1,38 @@
+included:
+  - App
+  - AppTests
+  - Packages
+
+excluded:
+  - Packages/*/.build
+  - DerivedData
+  - build
+
+disabled_rules:
+  - todo
+  - trailing_comma
+
+opt_in_rules:
+  - closure_spacing
+  - contains_over_first_not_nil
+  - empty_count
+  - explicit_init
+  - fatal_error_message
+  - first_where
+  - modifier_order
+  - redundant_nil_coalescing
+  - toggle_bool
+  - unneeded_parentheses_in_closure_argument
+  - vertical_whitespace_closing_braces
+
+line_length:
+  warning: 140
+  error: 200
+  ignores_comments: true
+  ignores_urls: true
+
+# Design tokens use short names (MCSpacing.s, .m, .l).
+identifier_name:
+  min_length: 1
+  excluded:
+    - id

@@ -1,0 +1,4 @@
+// Copy to Config/Local.xcconfig (gitignored) and fill in to build for a device.
+
+MCORE_BUNDLE_ID = com.yourdomain.mcore
+MCORE_DEVELOPMENT_TEAM = ABCDE12345

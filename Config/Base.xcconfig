@@ -1,0 +1,10 @@
+// Shared build settings for the m-Core app target.
+// Override any of these in Config/Local.xcconfig (gitignored); see Local.xcconfig.example.
+
+MCORE_BUNDLE_ID = com.example.mcore
+MCORE_DEVELOPMENT_TEAM =
+
+MARKETING_VERSION = 0.1.0
+CURRENT_PROJECT_VERSION = 1
+
+#include? "Local.xcconfig"
