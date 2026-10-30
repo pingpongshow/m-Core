@@ -89,6 +89,9 @@ public final class RadioController {
         self.restoreIdentifier = restoreIdentifier
         self.simulatedRadio = simulatedRadio
         self.now = now
+        // Set before anything can create the app's single central manager — a scan would otherwise create it first,
+        // without state restoration, and the key can't be added afterwards.
+        if let restoreIdentifier { BLETransport.configureStateRestoration(identifier: restoreIdentifier) }
         knownStore = KnownRadiosStore(defaults: defaults)
         if let data = defaults.data(forKey: Self.lastTargetKey) {
             lastTarget = try? JSONDecoder().decode(RadioTarget.self, from: data)

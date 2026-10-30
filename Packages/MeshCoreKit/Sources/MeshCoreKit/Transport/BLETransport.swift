@@ -1,23 +1,5 @@
 @preconcurrency import CoreBluetooth
 import Foundation
-import Synchronization
-
-/// Whether this process has created a `CBCentralManager` yet. AccessorySetupKit can only migrate radios found with
-/// CoreBluetooth into its accessory list before the app's first central manager exists.
-public enum CoreBluetoothUsage {
-    private static let created = Atomic<Bool>(false)
-
-    public static var hasCreatedCentralManager: Bool { created.load(ordering: .relaxed) }
-
-    static func makeCentral(
-        delegate: any CBCentralManagerDelegate,
-        queue: DispatchQueue,
-        options: [String: Any]? = nil
-    ) -> CBCentralManager {
-        created.store(true, ordering: .relaxed)
-        return CBCentralManager(delegate: delegate, queue: queue, options: options)
-    }
-}
 
 /// A companion radio seen during a BLE scan.
 public struct DiscoveredRadio: Identifiable, Hashable, Sendable {
@@ -36,15 +18,16 @@ extension MeshCoreProtocol.BLE {
 /// Scans for companion radios: anything advertising the Nordic UART service or named "MeshCore…",
 /// plus radios already connected to this phone.
 ///
-/// Concurrency: all CoreBluetooth state is confined to `queue`, which is also the delegate queue.
-public final class BLEScanner: NSObject, @unchecked Sendable {
-    private let queue = DispatchQueue(label: "app.mcore.ble.scan")
-    private var central: CBCentralManager?
+/// Concurrency: all CoreBluetooth state is confined to `BluetoothCentral.shared.queue`, which is also the delegate queue.
+public final class BLEScanner: NSObject, BluetoothCentralClient, @unchecked Sendable {
+    private let hub: BluetoothCentral
+    private var queue: DispatchQueue { hub.queue }
     private var continuation: AsyncStream<DiscoveredRadio>.Continuation?
     /// Identifies the current scan, so a superseded stream's termination doesn't stop its replacement.
     private var scanID: UUID?
 
     override public init() {
+        hub = .shared
         super.init()
     }
 
@@ -57,11 +40,9 @@ public final class BLEScanner: NSObject, @unchecked Sendable {
             self.continuation?.finish()
             self.continuation = continuation
             self.scanID = id
-            if let central = self.central {
-                self.startScanning(central)
-            } else {
-                self.central = CoreBluetoothUsage.makeCentral(delegate: self, queue: self.queue)
-            }
+            self.hub.add(self)
+            self.yieldAlreadyConnected()
+            self.hub.startScanning()
         }
         return stream
     }
@@ -74,30 +55,32 @@ public final class BLEScanner: NSObject, @unchecked Sendable {
     private func stop(scan id: UUID?) {
         queue.async {
             guard id == nil || id == self.scanID else { return }
-            self.central?.stopScan()
+            self.hub.stopScanning()
+            self.hub.remove(self)
             self.continuation?.finish()
             self.continuation = nil
             self.scanID = nil
         }
     }
 
-    private func startScanning(_ central: CBCentralManager) {
-        guard central.state == .poweredOn else { return }
-        for peripheral in central.retrieveConnectedPeripherals(withServices: [MeshCoreProtocol.BLE.service]) {
-            continuation?.yield(DiscoveredRadio(id: peripheral.identifier, name: peripheral.name ?? "MeshCore radio", rssi: 0))
-        }
-        central.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
-    }
-}
-
-extension BLEScanner: CBCentralManagerDelegate {
-    public func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        if central.state == .poweredOn, continuation != nil {
-            startScanning(central)
+    private func yieldAlreadyConnected() {
+        for peripheral in hub.connectedRadios() {
+            continuation?.yield(
+                DiscoveredRadio(id: peripheral.identifier, name: peripheral.name ?? "MeshCore radio", rssi: 0)
+            )
         }
     }
 
-    public func centralManager(
+    // MARK: BluetoothCentralClient
+
+    func centralDidUpdateState(_ central: CBCentralManager) {
+        // The manager can power on well after the scan was asked for; `BluetoothCentral` restarts the scan itself,
+        // so this only has to pick up radios another app already has connected.
+        guard central.state == .poweredOn, continuation != nil else { return }
+        yieldAlreadyConnected()
+    }
+
+    func central(
         _ central: CBCentralManager,
         didDiscover peripheral: CBPeripheral,
         advertisementData: [String: Any],
@@ -114,12 +97,12 @@ extension BLEScanner: CBCentralManagerDelegate {
 /// Connects to a companion radio over BLE (Nordic UART Service): one write or notification per frame.
 /// Radios with a PIN trigger the system pairing prompt when notifications are enabled.
 ///
-/// Concurrency: all CoreBluetooth state is confined to `queue`, which is also the delegate queue.
-public final class BLETransport: NSObject, MeshTransport, @unchecked Sendable {
+/// Concurrency: all CoreBluetooth state is confined to `BluetoothCentral.shared.queue`, which is also the delegate queue.
+public final class BLETransport: NSObject, MeshTransport, BluetoothCentralClient, @unchecked Sendable {
     public let peripheralID: UUID
     private let openTimeout: Duration
-    private let restoreIdentifier: String?
-    private let queue = DispatchQueue(label: "app.mcore.ble")
+    private let hub: BluetoothCentral
+    private var queue: DispatchQueue { hub.queue }
 
     private var central: CBCentralManager?
     private var peripheral: CBPeripheral?
@@ -128,15 +111,31 @@ public final class BLETransport: NSObject, MeshTransport, @unchecked Sendable {
     private var inbound: AsyncThrowingStream<Data, Error>.Continuation?
     private var writeContinuation: CheckedContinuation<Void, Error>?
     private var isClosing = false
+    /// Why the manager isn't usable yet, reported if it hasn't become `poweredOn` by `powerTimeout`.
+    private var powerProblem: TransportError?
+
+    /// How long the manager gets to reach `poweredOn` before the attempt is given up on. Long enough for
+    /// AccessorySetupKit's initial `poweredOff` to settle, short enough that Bluetooth really being off is
+    /// reported while the user is still looking at the screen.
+    private static let powerTimeout: Duration = .seconds(10)
+
+    /// Sets the CoreBluetooth state-restoration key for the app's single central manager, so iOS can relaunch the app
+    /// for radio events. Only the first call counts, so call it at launch before any scan or connection.
+    public static func configureStateRestoration(identifier: String) {
+        BluetoothCentral.shared.setRestoreIdentifier(identifier)
+    }
 
     /// - Parameters:
-    ///   - openTimeout: Covers connecting, discovery and the user typing a pairing PIN.
-    ///   - restoreIdentifier: CoreBluetooth state-restoration key; lets iOS relaunch the app for radio events.
+    ///   - openTimeout: Covers waiting for Bluetooth, connecting, discovery and the user typing a pairing PIN.
+    ///   - restoreIdentifier: Forwarded to ``configureStateRestoration(identifier:)``.
     public init(peripheralID: UUID, openTimeout: Duration = .seconds(60), restoreIdentifier: String? = nil) {
         self.peripheralID = peripheralID
         self.openTimeout = openTimeout
-        self.restoreIdentifier = restoreIdentifier
+        hub = .shared
         super.init()
+        if let restoreIdentifier {
+            Self.configureStateRestoration(identifier: restoreIdentifier)
+        }
     }
 
     public func open() async throws -> AsyncThrowingStream<Data, Error> {
@@ -148,16 +147,20 @@ public final class BLETransport: NSObject, MeshTransport, @unchecked Sendable {
                     return
                 }
                 self.isClosing = false
+                self.powerProblem = nil
                 self.inbound = continuation
                 self.openContinuation = opened
-                var options: [String: Any] = [:]
-                if let restoreIdentifier = self.restoreIdentifier {
-                    options[CBCentralManagerOptionRestoreIdentifierKey] = restoreIdentifier
+                self.central = self.hub.add(self)
+                self.queue.asyncAfter(deadline: .now() + self.openTimeout.timeInterval) { [weak self] in
+                    guard let self, self.openContinuation != nil else { return }
+                    self.finish(error: TransportError.timedOut)
                 }
-                self.central = CoreBluetoothUsage.makeCentral(delegate: self, queue: self.queue, options: options)
-                self.queue.asyncAfter(deadline: .now() + self.openTimeout.timeInterval) {
-                    if self.openContinuation != nil { self.finish(error: TransportError.timedOut) }
+                self.queue.asyncAfter(deadline: .now() + Self.powerTimeout.timeInterval) { [weak self] in
+                    guard let self, self.openContinuation != nil, self.central?.state != .poweredOn,
+                          let problem = self.powerProblem else { return }
+                    self.finish(error: problem)
                 }
+                self.connectIfReady()
             }
         }
         return stream
@@ -191,11 +194,57 @@ public final class BLETransport: NSObject, MeshTransport, @unchecked Sendable {
         }
     }
 
+    /// Connects once the shared manager is usable, and records why it isn't when it's not. Must run on `queue`.
+    ///
+    /// A state that isn't `poweredOn` is deliberately not fatal here. With AccessorySetupKit CoreBluetooth reports
+    /// only `poweredOn` and `poweredOff`, and it reports `poweredOff` until an authorized accessory is reachable —
+    /// so failing the attempt on the first state callback means every connect ends instantly in "Bluetooth is off",
+    /// however healthy the radio and the phone's Bluetooth actually are. Waiting for the state to settle, up to
+    /// `openTimeout`, is the only way to tell a radio that isn't ready yet from Bluetooth that is genuinely off.
+    private func connectIfReady() {
+        guard let central, openContinuation != nil else { return }
+        switch central.state {
+        case .poweredOn:
+            powerProblem = nil
+            connect(using: central)
+        case .unauthorized:
+            finish(error: TransportError.bluetoothUnavailable("m-Core isn't allowed to use Bluetooth. Turn it on in Settings."))
+        case .unsupported:
+            finish(error: TransportError.bluetoothUnavailable("Bluetooth LE isn't supported on this device."))
+        case .poweredOff:
+            powerProblem = .bluetoothUnavailable(
+                "Bluetooth isn't available for m-Core. Check that Bluetooth is on, and that the radio is powered on and nearby."
+            )
+        case .resetting, .unknown:
+            powerProblem = .bluetoothUnavailable("Bluetooth isn't ready yet.")
+        @unknown default:
+            powerProblem = .bluetoothUnavailable("Bluetooth isn't ready yet.")
+        }
+    }
+
+    private func connect(using central: CBCentralManager) {
+        guard let target = peripheral ?? hub.peripheral(for: peripheralID) else {
+            finish(error: TransportError.peripheralNotFound)
+            return
+        }
+        peripheral = target
+        target.delegate = self
+        // Another app, or an earlier session, may already hold the link; then there's nothing to connect and
+        // CoreBluetooth sends no `didConnect`, so go straight to discovery.
+        if target.state == .connected {
+            target.discoverServices([MeshCoreProtocol.BLE.service])
+        } else {
+            central.connect(target)
+        }
+    }
+
     /// Tears down the connection and completes any waiters. Must run on `queue`.
     private func finish(error: Error?) {
         if let central, let peripheral {
             central.cancelPeripheralConnection(peripheral)
         }
+        // Only this transport stops listening; the manager is shared and stays alive for the next attempt.
+        hub.remove(self)
         let failure = error ?? TransportError.disconnected(nil)
         openContinuation?.resume(throwing: failure)
         writeContinuation?.resume(throwing: failure)
@@ -210,56 +259,36 @@ public final class BLETransport: NSObject, MeshTransport, @unchecked Sendable {
         rxCharacteristic = nil
         peripheral?.delegate = nil
         peripheral = nil
-        central?.delegate = nil
         central = nil
     }
 }
 
-extension BLETransport: CBCentralManagerDelegate {
-    public func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        switch central.state {
-        case .poweredOn:
-            guard openContinuation != nil else { return }
-            if let restored = peripheral, restored.state == .connected {
-                restored.discoverServices([MeshCoreProtocol.BLE.service])
-                return
-            }
-            guard let target = peripheral ?? central.retrievePeripherals(withIdentifiers: [peripheralID]).first else {
-                finish(error: TransportError.peripheralNotFound)
-                return
-            }
-            peripheral = target
-            target.delegate = self
-            central.connect(target)
-        case .unauthorized:
-            finish(error: TransportError.bluetoothUnavailable("Bluetooth permission is denied"))
-        case .poweredOff:
-            finish(error: TransportError.bluetoothUnavailable("Bluetooth is off"))
-        case .unsupported:
-            finish(error: TransportError.bluetoothUnavailable("Bluetooth LE is not supported"))
-        default:
-            break
-        }
+extension BLETransport {
+    // MARK: BluetoothCentralClient
+
+    func centralDidUpdateState(_ central: CBCentralManager) {
+        connectIfReady()
     }
 
-    public func centralManager(_ central: CBCentralManager, willRestoreState dict: [String: Any]) {
-        let restored = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] ?? []
-        if let match = restored.first(where: { $0.identifier == peripheralID }) {
-            peripheral = match
-            match.delegate = self
-        }
+    func centralWillRestore(_ peripherals: [CBPeripheral]) {
+        guard let match = peripherals.first(where: { $0.identifier == peripheralID }) else { return }
+        peripheral = match
+        match.delegate = self
     }
 
-    public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+    func central(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        guard peripheral.identifier == peripheralID else { return }
+        peripheral.delegate = self
         peripheral.discoverServices([MeshCoreProtocol.BLE.service])
     }
 
-    public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+    func central(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+        guard peripheral.identifier == peripheralID else { return }
         finish(error: TransportError.connectionFailed(error?.localizedDescription ?? "failed to connect"))
     }
 
-    public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        guard !isClosing else { return }
+    func central(_ central: CBCentralManager, didDisconnect peripheral: CBPeripheral, error: Error?) {
+        guard peripheral.identifier == peripheralID, !isClosing, inbound != nil else { return }
         finish(error: TransportError.disconnected(error?.localizedDescription))
     }
 }
