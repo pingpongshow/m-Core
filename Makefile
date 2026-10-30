@@ -7,6 +7,7 @@ DESTINATION ?= $(shell scripts/sim-destination.sh)
 
 generate:
 	xcodegen generate --quiet
+	@scripts/apply-accessory-setup-kit.sh
 
 build: generate
 	xcodebuild build -project $(PROJECT) -scheme $(SCHEME) -destination "$(DESTINATION)" -quiet

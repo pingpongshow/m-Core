@@ -4,6 +4,10 @@
 MCORE_BUNDLE_ID = com.example.mcore
 MCORE_DEVELOPMENT_TEAM =
 
+// Bluetooth pairing: YES uses the AccessorySetupKit picker, NO a plain CoreBluetooth scan.
+// Read by scripts/apply-accessory-setup-kit.sh when the project is generated, not by the build itself.
+MCORE_ACCESSORY_SETUP_KIT = YES
+
 MARKETING_VERSION = 0.1.0
 CURRENT_PROJECT_VERSION = 1
 

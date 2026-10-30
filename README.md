@@ -57,7 +57,19 @@ To run on a device, copy `Config/Local.xcconfig.example` to `Config/Local.xcconf
 | `App/Glyphs` | Noto Sans glyphs for map labels (SIL Open Font License) |
 
 The app reads its list of map sources from [`Maps/sources.json`](Maps/sources.json) on `main` (cached for a day, falling back to build.protomaps.com). Editing that file moves every installed copy to new map sources without an app update.
-Bluetooth pairing uses AccessorySetupKit; removing `NSAccessorySetupKitSupports`/`NSAccessorySetupBluetoothServices` from `project.yml` makes it a plain CoreBluetooth build.
+
+### Bluetooth pairing
+
+Bluetooth radios are added through the AccessorySetupKit picker (Settings → Radio → **Add radio**). Setting
+`MCORE_ACCESSORY_SETUP_KIT = NO` in `Config/Local.xcconfig` — or `make build MCORE_ACCESSORY_SETUP_KIT=NO` for one
+build — drops the two `NSAccessorySetupKit*` keys from the generated `Info.plist` and falls back to plain
+CoreBluetooth: the standard Bluetooth permission prompt, and **Scan for radios** in place of the picker. The app reads
+those keys at launch and switches over on its own, so nothing in the Swift code changes.
+
+Reach for the fallback when a radio pairs in iOS Settings but the app still can't connect. Under AccessorySetupKit
+CoreBluetooth reports `poweredOn` only once an authorized accessory is reachable, and
+[iOS 18 had a bug](https://developer.apple.com/forums/thread/811101) where it never did. `Info.plist` is generated, so
+after switching, build once with `make` before going back to building from Xcode.
 
 In debug builds, the Design Gallery (Settings → Developer → Design Gallery) shows every component in the current appearance,
 and `-MCStartTab map` (or `chats`, `nodes`, `tools`, `settings`) opens the app on that tab.

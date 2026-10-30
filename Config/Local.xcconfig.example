@@ -2,3 +2,6 @@
 
 MCORE_BUNDLE_ID = com.yourdomain.mcore
 MCORE_DEVELOPMENT_TEAM = ABCDE12345
+
+// Uncomment to pair over plain CoreBluetooth instead of the AccessorySetupKit picker.
+// MCORE_ACCESSORY_SETUP_KIT = NO
