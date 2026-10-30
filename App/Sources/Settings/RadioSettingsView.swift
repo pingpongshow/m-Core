@@ -11,6 +11,10 @@ struct RadioSettingsView: View {
     @Environment(PresetCatalog.self) private var presetCatalog
     @State private var name = ""
     @State private var draftRadio: RadioParameters?
+    /// The preset the user picked, which several presets can share LoRa settings with (USA and Canada differ only in
+    /// their recommended path hash size). Nil once the values are edited by hand or re-read from the radio, and the
+    /// picker then names whichever preset those values match.
+    @State private var presetID: String?
     @State private var txPower: Double = 20
     @State private var pinText = ""
     @State private var status: String?
@@ -61,7 +65,10 @@ struct RadioSettingsView: View {
         guard let new else { return }
         let otherRadio = old?.publicKey != new.publicKey
         if otherRadio || old?.name != new.name { name = new.name }
-        if otherRadio || old?.radio != new.radio { draftRadio = new.radio }
+        if otherRadio || old?.radio != new.radio {
+            draftRadio = new.radio
+            presetID = nil
+        }
         if otherRadio || old?.txPowerDbm != new.txPowerDbm { txPower = Double(new.txPowerDbm) }
     }
 }
@@ -92,10 +99,22 @@ extension RadioSettingsView {
         }
     }
 
+    /// The preset the picker shows: the one the user chose, else whichever the draft values match.
+    /// Presets can share LoRa settings, so a chosen one can't be recovered from the values alone.
+    private var selectedPresetID: String {
+        if let presetID, presetID == "custom" || presetCatalog.allPresets.contains(where: { $0.id == presetID }) {
+            return presetID
+        }
+        return draftRadio.flatMap(presetCatalog.matching)?.id ?? "custom"
+    }
+
     private var presetPicker: some View {
         Picker("Preset", selection: Binding(
-            get: { draftRadio.flatMap(presetCatalog.matching)?.id ?? "custom" },
-            set: { id in if let preset = presetCatalog.allPresets.first(where: { $0.id == id }) { draftRadio = preset.radio } }
+            get: { selectedPresetID },
+            set: { id in
+                presetID = id
+                if let preset = presetCatalog.allPresets.first(where: { $0.id == id }) { draftRadio = preset.radio }
+            }
         )) {
             Text("Other").tag("custom")
             ForEach(presetCatalog.regions, id: \.self) { region in
@@ -129,22 +148,31 @@ extension RadioSettingsView {
                     HStack(spacing: MCSpacing.xs) {
                         TextField("MHz", value: Binding(
                             get: { draft.frequencyMHz },
-                            set: { draftRadio?.frequencyKHz = UInt32(($0 * 1000).rounded()) }
+                            set: { mhz in editDraft { $0.frequencyKHz = UInt32((mhz * 1000).rounded()) } }
                         ), format: .number.precision(.fractionLength(3)))
                         .multilineTextAlignment(.trailing)
                         .keyboardType(.decimalPad)
                         Text("MHz").foregroundStyle(.secondary)
                     }
                 }
-                Picker("Bandwidth", selection: Binding(get: { draft.bandwidthHz }, set: { draftRadio?.bandwidthHz = $0 })) {
+                Picker("Bandwidth", selection: Binding(
+                    get: { draft.bandwidthHz },
+                    set: { hz in editDraft { $0.bandwidthHz = hz } }
+                )) {
                     ForEach([7_800, 10_400, 15_600, 20_800, 31_250, 41_700, 62_500, 125_000, 250_000, 500_000] as [UInt32], id: \.self) {
                         Text(String(format: "%g kHz", Double($0) / 1000)).tag($0)
                     }
                 }
-                Picker("Spreading factor", selection: Binding(get: { draft.spreadingFactor }, set: { draftRadio?.spreadingFactor = $0 })) {
+                Picker("Spreading factor", selection: Binding(
+                    get: { draft.spreadingFactor },
+                    set: { sf in editDraft { $0.spreadingFactor = sf } }
+                )) {
                     ForEach(UInt8(5)...12, id: \.self) { Text("SF\($0)").tag($0) }
                 }
-                Picker("Coding rate", selection: Binding(get: { draft.codingRate }, set: { draftRadio?.codingRate = $0 })) {
+                Picker("Coding rate", selection: Binding(
+                    get: { draft.codingRate },
+                    set: { cr in editDraft { $0.codingRate = cr } }
+                )) {
                     ForEach(UInt8(5)...8, id: \.self) { Text("4/\($0)").tag($0) }
                 }
                 if draft != selfInfo.radio { applyRadioButton }
@@ -298,6 +326,15 @@ extension RadioSettingsView {
 // MARK: Actions
 
 extension RadioSettingsView {
+    /// Edits one LoRa value by hand, which drops any chosen preset: the picker goes back to naming whatever
+    /// the values now match, or "Other".
+    private func editDraft(_ change: (inout RadioParameters) -> Void) {
+        guard var draft = draftRadio else { return }
+        change(&draft)
+        draftRadio = draft
+        presetID = nil
+    }
+
     private func applyRadio() {
         guard let draftRadio else { return }
         run("LoRa settings applied.") { try await settings.setRadio(draftRadio) }
