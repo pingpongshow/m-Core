@@ -312,4 +312,28 @@ struct BatteryChemistryTests {
         #expect(controller.batteryChemistry == .lithiumIronPhosphate)
         await controller.disconnect()
     }
+
+    /// USA and Canada have identical LoRa settings, so the chosen preset can't be read back from the radio.
+    @MainActor
+    @Test func appliedPresetIsRememberedPerRadio() async throws {
+        let store = defaults()
+        let mock = MockRadio()
+        let controller = RadioController(defaults: store, simulatedRadio: mock)
+        await controller.connect(to: .simulator)
+        try await waitUntil { controller.selfInfo != nil }
+        #expect(controller.appliedPresetID == nil)
+
+        controller.setAppliedPresetID("us")
+        #expect(controller.appliedPresetID == "us")
+        await controller.disconnect()
+        // Nothing to answer for with no radio connected.
+        #expect(controller.appliedPresetID == nil)
+
+        await controller.connect(to: .simulator)
+        try await waitUntil { controller.selfInfo != nil }
+        #expect(controller.appliedPresetID == "us")
+        controller.setAppliedPresetID(nil)
+        #expect(controller.appliedPresetID == nil)
+        await controller.disconnect()
+    }
 }

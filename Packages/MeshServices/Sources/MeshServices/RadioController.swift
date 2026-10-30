@@ -307,6 +307,31 @@ public final class RadioController {
 
     private static func chemistryKey(_ radioKey: String) -> String { "radio.batteryChemistry.\(radioKey)" }
 
+    // MARK: LoRa preset
+
+    /// The preset the user last applied to the connected radio. Presets can share LoRa settings — USA and Canada
+    /// differ only in their recommended path hash size — so which one was chosen can't be read back from the radio
+    /// and has to be remembered per radio.
+    public var appliedPresetID: String? {
+        guard let key = selfInfo?.publicKey.hex else { return nil }
+        _ = presetRevision
+        return defaults.string(forKey: Self.presetKey(key))
+    }
+
+    public func setAppliedPresetID(_ id: String?) {
+        guard let key = selfInfo?.publicKey.hex else { return }
+        if let id {
+            defaults.set(id, forKey: Self.presetKey(key))
+        } else {
+            defaults.removeObject(forKey: Self.presetKey(key))
+        }
+        presetRevision += 1
+    }
+
+    private var presetRevision = 0
+
+    private static func presetKey(_ radioKey: String) -> String { "radio.loraPreset.\(radioKey)" }
+
     // MARK: Radio info
 
     public func refreshBattery() async {

@@ -67,7 +67,11 @@ struct RadioSettingsView: View {
         if otherRadio || old?.name != new.name { name = new.name }
         if otherRadio || old?.radio != new.radio {
             draftRadio = new.radio
-            presetID = nil
+            // A chosen preset survives the radio reporting back the settings it was just given; re-deriving it from
+            // those settings would rename the user's choice to whichever preset shares them.
+            if otherRadio || presetCatalog.allPresets.first(where: { $0.id == presetID })?.radio != new.radio {
+                presetID = nil
+            }
         }
         if otherRadio || old?.txPowerDbm != new.txPowerDbm { txPower = Double(new.txPowerDbm) }
     }
@@ -99,11 +103,17 @@ extension RadioSettingsView {
         }
     }
 
-    /// The preset the picker shows: the one the user chose, else whichever the draft values match.
-    /// Presets can share LoRa settings, so a chosen one can't be recovered from the values alone.
+    /// The preset the picker shows: the one chosen here, else the one last applied to this radio while its settings
+    /// still match, else whichever preset the draft values match. Presets can share LoRa settings, so a chosen one
+    /// can't be recovered from the values alone.
     private var selectedPresetID: String {
         if let presetID, presetID == "custom" || presetCatalog.allPresets.contains(where: { $0.id == presetID }) {
             return presetID
+        }
+        if let applied = radio.appliedPresetID,
+           let preset = presetCatalog.allPresets.first(where: { $0.id == applied }),
+           preset.radio == draftRadio {
+            return applied
         }
         return draftRadio.flatMap(presetCatalog.matching)?.id ?? "custom"
     }
@@ -113,7 +123,15 @@ extension RadioSettingsView {
             get: { selectedPresetID },
             set: { id in
                 presetID = id
-                if let preset = presetCatalog.allPresets.first(where: { $0.id == id }) { draftRadio = preset.radio }
+                guard let preset = presetCatalog.allPresets.first(where: { $0.id == id }) else {
+                    // "Other": stop calling the radio's settings by a preset's name.
+                    radio.setAppliedPresetID(nil)
+                    return
+                }
+                draftRadio = preset.radio
+                // The radio is already on these settings, so there's nothing to apply and no Apply button to
+                // record the choice: name it now. Presets that share settings are only told apart by this.
+                if preset.radio == radio.selfInfo?.radio { radio.setAppliedPresetID(id) }
             }
         )) {
             Text("Other").tag("custom")
@@ -196,7 +214,12 @@ extension RadioSettingsView {
         } header: {
             Text("LoRa")
         } footer: {
-            Text("Use the same settings as your local mesh. Higher power reaches further but drains the battery faster.")
+            if let draft = draftRadio, draft != selfInfo.radio {
+                Text("These aren't on the radio yet — tap Apply LoRa settings to send them.")
+                    .foregroundStyle(MCColor.warning)
+            } else {
+                Text("Use the same settings as your local mesh. Higher power reaches further but drains the battery faster.")
+            }
         }
     }
 
@@ -337,7 +360,12 @@ extension RadioSettingsView {
 
     private func applyRadio() {
         guard let draftRadio else { return }
-        run("LoRa settings applied.") { try await settings.setRadio(draftRadio) }
+        // Remembered against the radio, since the settings it reports back can't say which preset they came from.
+        let chosen = selectedPresetID
+        run("LoRa settings applied.") {
+            try await settings.setRadio(draftRadio)
+            radio.setAppliedPresetID(chosen == "custom" ? nil : chosen)
+        }
     }
 
     private func restore(_ result: Result<URL, Error>) {
